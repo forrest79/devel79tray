@@ -31,4 +31,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern CDevel79TrayApp theApp;
+extern CDevel79TrayApp trayApp;

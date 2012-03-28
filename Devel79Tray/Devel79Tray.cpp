@@ -1,4 +1,3 @@
-
 // Devel79Tray.cpp : Defines the class behaviors for the application.
 //
 
@@ -31,7 +30,7 @@ CDevel79TrayApp::CDevel79TrayApp()
 
 // The one and only CDevel79TrayApp object
 
-CDevel79TrayApp theApp;
+CDevel79TrayApp trayApp;
 
 
 // CDevel79TrayApp initialization

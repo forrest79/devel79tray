@@ -1,4 +1,3 @@
-
 // MainFrm.cpp : implementation of the CMainFrame class
 //
 
@@ -42,13 +41,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if( !CFrameWnd::PreCreateWindow(cs) )
+	if(!CFrameWnd::PreCreateWindow(cs)) {
 		return FALSE;
+	}
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	cs.style = WS_OVERLAPPED | WS_CAPTION | FWS_ADDTOTITLE
-		;
+	cs.style = WS_OVERLAPPED | WS_CAPTION | FWS_ADDTOTITLE;
 
 	cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
 	cs.lpszClass = AfxRegisterWndClass(0);

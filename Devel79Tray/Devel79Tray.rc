@@ -81,7 +81,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\Devel79Tray.ico"
+IDI_MAIN                ICON                    "Resourse\\Icon_Server.ico"
+IDI_RUN                 ICON                    "Resourse\\Icon_Server_Run.ico"
+IDI_STOP                ICON                    "Resourse\\Icon_Server_Stop.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -93,18 +95,6 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&About Devel79Tray...",       ID_APP_ABOUT
     END
 END
 
@@ -240,7 +230,6 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE 9, 1
 #pragma code_page(1252)
-#include "res\Devel79Tray.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
 

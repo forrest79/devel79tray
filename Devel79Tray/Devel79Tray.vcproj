@@ -266,15 +266,19 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\res\Devel79Tray.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\Devel79Tray.rc"
 				>
 			</File>
 			<File
-				RelativePath=".\res\Devel79Tray.rc2"
+				RelativePath=".\Resourse\Icon_Server.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Resourse\Icon_Server_Run.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Resourse\Icon_Server_Stop.ico"
 				>
 			</File>
 		</Filter>
