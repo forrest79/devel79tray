@@ -10,6 +10,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define	WM_ICON_NOTIFY WM_APP + 10
+
 // CMainFrame
 
 IMPLEMENT_DYNAMIC(CMainFrame, CFrameWnd)
@@ -35,6 +37,27 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1) {
 		return -1;
 	}
+
+	HICON hIcon = ::LoadIcon(AfxGetResourceHandle(), MAKEINTRESOURCE(IDI_MAIN));  // Icon to use
+
+	if (!trayIcon.Create(
+		NULL,                            // Let icon deal with its own messages
+		WM_ICON_NOTIFY,                  // Icon notify message to use
+		_T("This is a Tray Icon - Right click on me!"),  // tooltip
+		hIcon,
+		IDR_TRAY_MENU,                   // ID of tray icon
+		FALSE,
+		_T("Here's a cool new Win2K balloon!"), // balloon tip
+		_T("Look at me!"),               // balloon title
+		NIIF_WARNING,                    // balloon icon
+		10))                             // balloon timeout
+    {
+		return -1;
+    }
+
+    CSystemTray::MinimiseToTray(this);
+
+	//trayIcon.SetMenuDefaultItem(3, TRUE);
 
 	return 0;
 }

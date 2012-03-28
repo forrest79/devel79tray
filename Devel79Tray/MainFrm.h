@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "SystemTray.h"
+
 class CMainFrame : public CFrameWnd
 {
 	
@@ -13,6 +15,7 @@ protected:
 
 // Attributes
 public:
+	CSystemTray trayIcon;
 
 // Operations
 public:

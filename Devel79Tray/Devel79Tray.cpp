@@ -49,7 +49,7 @@ BOOL CDevel79TrayApp::InitInstance()
 	}
 	m_pMainWnd = pFrame;
 	// create and load the frame with its resources
-	pFrame->LoadFrame(IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
+	pFrame->LoadFrame(IDR_MAIN, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
 
 	// The one and only window has been initialized, so show and update it
 	pFrame->ShowWindow(SW_SHOW);
