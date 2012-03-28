@@ -1,9 +1,7 @@
-
 // MainFrm.h : interface of the CMainFrame class
 //
 
 #pragma once
-#include "ChildView.h"
 
 class CMainFrame : public CFrameWnd
 {
@@ -32,12 +30,9 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-	CChildView    m_wndView;
-
 // Generated message map functions
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSetFocus(CWnd *pOldWnd);
 	DECLARE_MESSAGE_MAP()
 
 };
