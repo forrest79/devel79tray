@@ -18,11 +18,12 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="..\bin\"
+			IntermediateDirectory="..\bin\"
 			ConfigurationType="1"
 			UseOfMFC="1"
 			CharacterSet="1"
+			BuildLogFile="..\bin\BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -50,6 +51,10 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile="..\bin\$(TargetName).pch"
+				ObjectFile="..\bin\"
+				ProgramDataBaseFileName="..\bin\vc90.pdb"
+				XMLDocumentationFileName="..\bin\"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -67,6 +72,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\bin\devel79tray-debug.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -96,12 +102,13 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="..\bin\"
+			IntermediateDirectory="..\bin\"
 			ConfigurationType="1"
 			UseOfMFC="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
+			BuildLogFile="..\bin\BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -130,6 +137,10 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile="..\bin\$(TargetName).pch"
+				ObjectFile="..\bin\"
+				ProgramDataBaseFileName="..\bin\vc90.pdb"
+				XMLDocumentationFileName="..\bin\"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -147,6 +158,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\bin\devel79tray.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
