@@ -1,16 +1,12 @@
-// Devel79Tray.cpp : Defines the class behaviors for the application.
-//
-
 #include "stdafx.h"
 #include "afxwinappex.h"
+#include "TrayCommandLineInfo.h"
 #include "Devel79Tray.h"
 #include "MainFrm.h"
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
 
 // CDevel79TrayApp
 
@@ -23,9 +19,7 @@ END_MESSAGE_MAP()
 
 CDevel79TrayApp::CDevel79TrayApp()
 {
-
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+	virtualBox = new CVirtualBox;
 }
 
 // The one and only CDevel79TrayApp object
@@ -49,13 +43,18 @@ BOOL CDevel79TrayApp::InitInstance()
 	}
 	m_pMainWnd = pFrame;
 	// create and load the frame with its resources
-	pFrame->LoadFrame(IDR_MAIN, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
+	pFrame->LoadFrame(IDR_TRAY, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
 
-	// The one and only window has been initialized, so show and update it
-	pFrame->ShowWindow(SW_SHOW);
-	pFrame->UpdateWindow();
-	// call DragAcceptFiles only if there's a suffix
-	//  In an SDI app, this should occur after ProcessShellCommand
+	CTrayCommandLineInfo cmdLineInfo;
+	ParseCommandLine(cmdLineInfo);
+  
+	virtualBox->ReadConfiguration(cmdLineInfo.GetConfigFile());
+
+	if (cmdLineInfo.IsRunServer()) {
+		TRACE("RUN SERVER");
+		// RunServer
+	}
+
 	return TRUE;
 }
 

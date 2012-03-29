@@ -1,4 +1,3 @@
-
 // Devel79Tray.h : main header file for the Devel79Tray application
 //
 #pragma once
@@ -7,7 +6,8 @@
 	#error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include "resource.h"       // main symbols
+#include "resource.h" // main symbols
+#include "VirtualBox.h"
 
 
 // CDevel79TrayApp:
@@ -27,7 +27,9 @@ public:
 // Implementation
 
 public:
-	afx_msg void OnAppAbout();
+//	afx_msg void OnAppAbout();
+	CVirtualBox* virtualBox;
+
 	DECLARE_MESSAGE_MAP()
 };
 

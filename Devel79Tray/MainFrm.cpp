@@ -45,7 +45,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		WM_ICON_NOTIFY,                  // Icon notify message to use
 		_T("This is a Tray Icon - Right click on me!"),  // tooltip
 		hIcon,
-		IDR_TRAY_MENU,                   // ID of tray icon
+		IDR_TRAY,                   // ID of tray icon
 		FALSE,
 		_T("Here's a cool new Win2K balloon!"), // balloon tip
 		_T("Look at me!"),               // balloon title
@@ -57,7 +57,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     CSystemTray::MinimiseToTray(this);
 
-	//trayIcon.SetMenuDefaultItem(3, TRUE);
+	trayIcon.SetMenuDefaultItem(0, TRUE);
 
 	return 0;
 }
@@ -67,8 +67,6 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	if(!CFrameWnd::PreCreateWindow(cs)) {
 		return FALSE;
 	}
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
 
 	cs.style = WS_OVERLAPPED | WS_CAPTION | FWS_ADDTOTITLE;
 

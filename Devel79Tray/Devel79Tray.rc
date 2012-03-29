@@ -89,15 +89,7 @@ IDI_STOP                ICON                    "Resourse\\Icon_Server_Stop.ico"
 // Menu
 //
 
-IDR_MAIN MENU 
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-END
-
-IDR_TRAY_MENU MENU 
+IDR_TRAY MENU 
 BEGIN
     POPUP "TRAY"
     BEGIN
@@ -152,7 +144,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_MAIN                "Devel79Tray"
+    IDR_TRAY                "Devel79Tray"
 END
 
 #endif    // English (U.S.) resources

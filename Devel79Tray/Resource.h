@@ -2,13 +2,10 @@
 // Microsoft Visual C++ generated include file.
 // Used by Devel79Tray.rc
 //
-#define IDR_MAIN                        128
+#define IDR_TRAY                        309
 #define IDI_MAIN                        310
 #define IDI_RUN                         311
 #define IDI_STOP                        312
-#define IDR_TRAYMENU                    313
-#define IDR_TRAY_MENU                   313
-#define ID_TRAY_E7XIT                   32771
 #define ID_TRAY_EXIT                    32772
 
 // Next default values for new objects
