@@ -93,6 +93,14 @@ IDR_TRAY MENU
 BEGIN
     POPUP "TRAY"
     BEGIN
+        MENUITEM "&Show console",               ID_TRAY_SHOWCONSOLE
+        MENUITEM "&Hide console",               ID_TRAY_HIDECONSOLE
+        MENUITEM SEPARATOR
+        MENUITEM "S&tart server",               ID_TRAY_STARTSERVER
+        MENUITEM "St&op server",                ID_TRAY_STOPSERVER
+        MENUITEM "&Restart server",             ID_TRAY_RESTARTSERVER
+        MENUITEM "T&est server",                ID_TRAY_TESTSERVER
+        MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
 END

@@ -7,7 +7,7 @@
 #endif
 
 #include "resource.h" // main symbols
-#include "VirtualBox.h"
+#include "VirtualBoxTray.h"
 
 
 // CDevel79TrayApp:
@@ -28,7 +28,7 @@ public:
 
 public:
 //	afx_msg void OnAppAbout();
-	CVirtualBox* virtualBox;
+	CVirtualBoxTray* vbTray;
 
 	DECLARE_MESSAGE_MAP()
 };

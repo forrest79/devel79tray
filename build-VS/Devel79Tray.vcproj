@@ -234,7 +234,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\VirtualBox.cpp"
+				RelativePath="..\VirtualBoxSDK\VirtualBox_i.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\Devel79Tray\VirtualBoxTray.cpp"
 				>
 			</File>
 		</Filter>
@@ -272,7 +284,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\VirtualBox.h"
+				RelativePath="..\Devel79Tray\VirtualBoxTray.h"
 				>
 			</File>
 		</Filter>

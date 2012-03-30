@@ -19,7 +19,7 @@ END_MESSAGE_MAP()
 
 CDevel79TrayApp::CDevel79TrayApp()
 {
-	virtualBox = new CVirtualBox;
+	vbTray = new CVirtualBoxTray;
 }
 
 // The one and only CDevel79TrayApp object
@@ -48,11 +48,21 @@ BOOL CDevel79TrayApp::InitInstance()
 	CTrayCommandLineInfo cmdLineInfo;
 	ParseCommandLine(cmdLineInfo);
   
-	virtualBox->ReadConfiguration(cmdLineInfo.GetConfigFile());
+	// Load configuration...
+	if (!vbTray->ReadConfiguration(cmdLineInfo.GetConfigFile())) {
+		MessageBox(NULL, vbTray->GetErrorMessage(), _T("Error"), MB_ICONERROR | MB_OK);
+		return FALSE;
+	}
 
+	// Init VirtualBox...
+	if (!vbTray->InitVirtualBox()) {
+		MessageBox(NULL, vbTray->GetErrorMessage(), _T("Error"), MB_ICONERROR | MB_OK);
+		return FALSE;
+	}
+
+	// Run server is there is command line argument...
 	if (cmdLineInfo.IsRunServer()) {
-		TRACE("RUN SERVER");
-		// RunServer
+		//
 	}
 
 	return TRUE;
