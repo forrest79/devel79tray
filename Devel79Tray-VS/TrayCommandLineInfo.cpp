@@ -18,9 +18,9 @@ void CTrayCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bL
 	if (nextConfigFile) {
 		configFile = pszParam;
 	} else {
-		if ((0 == wcsicmp(pszParam, _T("-runserver"))) || (0 == wcsicmp(pszParam, _T("r")))) {
+		if ((wcsicmp(pszParam, _T("-runserver")) == 0) || (wcsicmp(pszParam, _T("r")) == 0)) {
 			runServer = TRUE;
-		} else if ((0 == wcsicmp(pszParam, _T("-config"))) || (0 == wcsicmp(pszParam, _T("c")))) {
+		} else if ((0 == wcsicmp(pszParam, _T("-config"))) || (wcsicmp(pszParam, _T("c")) == 0)) {
 			nextConfigFile = TRUE;
 		}
 	}

@@ -18,7 +18,7 @@ CVirtualBox::CVirtualBox()
 	name = DEFAULT_NAME;
 	machine = DEFAULT_MACHINE;
 	ip = DEFAULT_IP;
-	checkSeconds = DEFAULT_CHECKSECONDS;
+	checktime = DEFAULT_CHECKSECONDS;
 }
 
 //
@@ -39,8 +39,31 @@ BOOL CVirtualBox::ReadConfiguration(CString configFile)
 	while(file.ReadString(line)) {
 		line = line.Trim();
 
-		if ((line.Compare(_T("")) != 0) && (line.GetAt(0) != '#')) {
-			TRACE(line);
+		if ((line.Compare(_T("")) != 0) && (line.GetAt(0) != '#')) { // Ignore blank lines and comment lines ('#')
+			CString configName, configValue;
+
+			int tokenPos = 0;
+			CString token = line.Tokenize(_T("="), tokenPos);
+			if (!token.IsEmpty()) { // Read name...
+				configName = token.Trim();
+
+				token = line.Tokenize(_T("="), tokenPos);
+				if (!token.IsEmpty()) { // ...and value
+					configValue = token.Trim();
+
+					if (name.CollateNoCase(_T("name")) == 0) {
+						name = configValue;
+					} else if (name.CollateNoCase(_T("machine")) == 0) {
+						machine = configValue;
+					} else if (name.CollateNoCase(_T("ip")) == 0) {
+						ip = configValue;
+					} else if (name.CollateNoCase(_T("checktime")) == 0) {
+						checktime = _ttoi(configValue);
+					}
+				}
+			} else {
+				continue;
+			}
 		}
 	}
 

@@ -234,10 +234,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TrayCommandLineInfo.h"
-				>
-			</File>
-			<File
 				RelativePath=".\VirtualBox.cpp"
 				>
 			</File>
@@ -269,6 +265,10 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TrayCommandLineInfo.h"
 				>
 			</File>
 			<File
