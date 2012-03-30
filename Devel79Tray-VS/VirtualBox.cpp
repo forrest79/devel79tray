@@ -4,25 +4,47 @@
 
 #define DEFAULT_CONFIGFILE "devel79.conf"
 
+#define DEFAULT_NAME         "Devel79 Server"
+#define DEFAULT_MACHINE      "devel79"
+#define DEFAULT_IP           "192.168.56.1"
+#define DEFAULT_CHECKSECONDS 15
+
 // CVirtualBox
 
 // CVirtualBox construction
 
 CVirtualBox::CVirtualBox()
 {
-
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+	name = DEFAULT_NAME;
+	machine = DEFAULT_MACHINE;
+	ip = DEFAULT_IP;
+	checkSeconds = DEFAULT_CHECKSECONDS;
 }
 
+//
 BOOL CVirtualBox::ReadConfiguration(CString configFile)
 {
 	if (configFile.Compare(_T("")) == 0) {
 		configFile = DEFAULT_CONFIGFILE;
 	}
 
-	CString file = ExeDirectory() + _T("\\") + configFile;
-	TRACE(file);
+	CString filename = ExeDirectory() + _T("\\") + configFile;
+
+	CStdioFile file; 
+	if (!file.Open(filename, CFile::modeRead)) {
+		return FALSE;
+	}
+
+	CString line;
+	while(file.ReadString(line)) {
+		line = line.Trim();
+
+		if ((line.Compare(_T("")) != 0) && (line.GetAt(0) != '#')) {
+			TRACE(line);
+		}
+	}
+
+	file.Close();
 
 	return TRUE;
 }
