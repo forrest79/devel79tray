@@ -78,6 +78,74 @@ void CVirtualBoxTray::ReleaseVirtualBox()
 }
 
 //
+BOOL CVirtualBoxTray::StartServer()
+{
+	HRESULT status;
+
+	ISession *session = NULL;
+	IConsole *console = NULL;
+	IProgress *progress = NULL;
+	BSTR sessiontype = SysAllocString(L"gui");
+	BSTR guid;
+
+	// Get the GUID of the machine
+	status = vbMachine->get_Id(&guid);
+	if (!SUCCEEDED(status)) {
+		errorMessage = _T("Error retrieving machine '") + machine + _T("' ID.");
+		return FALSE;
+	}
+
+	// Create the session object
+	status = CoCreateInstance(CLSID_Session,        // the VirtualBox base object
+							  NULL,                 // no aggregation
+							  CLSCTX_INPROC_SERVER, // the object lives in a server process on this machine
+							  IID_ISession,         // IID of the interface
+							  (void**)&session);
+	if (!SUCCEEDED(status))	{
+		errorMessage = _T("Error creating Session instance for machine '") + machine + _T("'.");
+		return FALSE;
+	}
+
+	// Start a VM session using the delivered VBox GUI
+	status = vbMachine->LaunchVMProcess(session, sessiontype, NULL, &progress);
+	if (!SUCCEEDED(status)) {
+		errorMessage = _T("Could not open remote session for machine '") + machine + _T("'.");
+		return FALSE;
+	}
+
+	// Wait until VM is running
+	status = progress->WaitForCompletion(-1);
+
+	// Get console object
+	session->get_Console(&console);
+
+	// Bring console window to front
+	vbMachine->ShowConsoleWindow(0);
+
+	//printf ("Press enter to power off VM and close the session...\n");
+	//getchar();
+
+	/* Power down the machine. */
+	//rc = console->PowerDown(&progress);
+
+	/* Wait until VM is powered down. */
+	//printf ("Powering off VM, please wait ...\n");
+	//rc = progress->WaitForCompletion (-1);
+
+	/* Close the session. */
+	//rc = session->UnlockMachine();
+
+	//SAFE_RELEASE(console);
+	//SAFE_RELEASE(progress);
+	//SAFE_RELEASE(session);
+	//SysFreeString(guid);
+	//SysFreeString(sessiontype);
+	//SAFE_RELEASE(machine);
+
+	return TRUE;
+}
+
+//
 BOOL CVirtualBoxTray::ReadConfiguration(CString configFile)
 {
 	if (configFile.Compare(_T("")) == 0) {
@@ -127,6 +195,12 @@ BOOL CVirtualBoxTray::ReadConfiguration(CString configFile)
 	file.Close();
 
 	return TRUE;
+}
+
+//
+CString CVirtualBoxTray::GetName()
+{
+	return name;
 }
 
 //

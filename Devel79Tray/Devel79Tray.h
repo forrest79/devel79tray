@@ -18,6 +18,7 @@ class CDevel79TrayApp : public CWinApp
 {
 public:
 	CDevel79TrayApp();
+	void Close();
 
 
 // Overrides
@@ -27,10 +28,17 @@ public:
 // Implementation
 
 public:
-//	afx_msg void OnAppAbout();
 	CVirtualBoxTray* vbTray;
 
 	DECLARE_MESSAGE_MAP()
+
+	afx_msg void OnStartServer();
+
+private:
+	void StartServer();
+
+	void ShowInfo(CString info);
+	void ShowError(CString error);
 };
 
 extern CDevel79TrayApp trayApp;

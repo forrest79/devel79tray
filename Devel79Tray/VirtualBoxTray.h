@@ -11,6 +11,8 @@ public:
 	void ReleaseVirtualBox();
 	BOOL ReadConfiguration(CString configFile);
 
+	BOOL StartServer();
+
 	CString GetName();
 	CString GetMachine();
 	CString GetIp();
@@ -34,4 +36,5 @@ private:
 
 	// Methods
 	CString ExeDirectory();
+
 };

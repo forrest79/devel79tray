@@ -36,6 +36,7 @@ public:
 // Generated message map functions
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnClose();
 	DECLARE_MESSAGE_MAP()
 
 };

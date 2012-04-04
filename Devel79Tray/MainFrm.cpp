@@ -18,7 +18,7 @@ IMPLEMENT_DYNAMIC(CMainFrame, CFrameWnd)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
-	ON_WM_SETFOCUS()
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -60,6 +60,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	trayIcon.SetMenuDefaultItem(0, TRUE);
 
 	return 0;
+}
+
+//
+afx_msg void CMainFrame::OnClose()
+{
+	trayApp.Close();
+	DestroyWindow();
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)

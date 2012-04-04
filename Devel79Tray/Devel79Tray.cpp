@@ -11,7 +11,7 @@
 // CDevel79TrayApp
 
 BEGIN_MESSAGE_MAP(CDevel79TrayApp, CWinApp)
-	//ON_COMMAND(ID_APP_ABOUT, &CDevel79TrayApp::OnAppAbout)
+	ON_COMMAND(ID_TRAY_STARTSERVER, &CDevel79TrayApp::OnStartServer)
 END_MESSAGE_MAP()
 
 
@@ -50,32 +50,60 @@ BOOL CDevel79TrayApp::InitInstance()
   
 	// Load configuration...
 	if (!vbTray->ReadConfiguration(cmdLineInfo.GetConfigFile())) {
-		MessageBox(NULL, vbTray->GetErrorMessage(), _T("Error"), MB_ICONERROR | MB_OK);
+		ShowError(vbTray->GetErrorMessage());
+		Close();
 		return FALSE;
 	}
 
 	// Init VirtualBox...
 	if (!vbTray->InitVirtualBox()) {
-		MessageBox(NULL, vbTray->GetErrorMessage(), _T("Error"), MB_ICONERROR | MB_OK);
+		ShowError(vbTray->GetErrorMessage());
+		Close();
 		return FALSE;
 	}
 
 	// Run server is there is command line argument...
 	if (cmdLineInfo.IsRunServer()) {
-		//
+		StartServer();
 	}
 
 	return TRUE;
 }
 
-// App command to run the dialog
-//void CDevel79TrayApp::OnAppAbout()
-//{
-//	CAboutDlg aboutDlg;
-//	aboutDlg.DoModal();
-//}
+//
+void CDevel79TrayApp::Close()
+{
+	vbTray->ReleaseVirtualBox();
+}
 
 // CDevel79TrayApp message handlers
 
+//
+void CDevel79TrayApp::OnStartServer()
+{
+	StartServer();
+}
+
+// PRIVATE
+
+//
+void CDevel79TrayApp::StartServer()
+{
+	if (!vbTray->StartServer()) {
+		ShowError(vbTray->GetErrorMessage());
+	}
+}
+
+//
+void CDevel79TrayApp::ShowInfo(CString info)
+{
+	MessageBox(NULL, info, vbTray->GetName(), MB_ICONINFORMATION | MB_OK);
+}
+
+//
+void CDevel79TrayApp::ShowError(CString error)
+{
+	MessageBox(NULL, error, _T("[Error]") + vbTray->GetName(), MB_ICONERROR | MB_OK);
+}
 
 

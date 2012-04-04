@@ -198,15 +198,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\..\Devel79Tray\Devel79Tray.cpp"
+				RelativePath="..\Devel79Tray\Devel79Tray.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\MainFrm.cpp"
+				RelativePath="..\Devel79Tray\MainFrm.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\stdafx.cpp"
+				RelativePath="..\Devel79Tray\stdafx.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -226,11 +226,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\SystemTray.cpp"
+				RelativePath="..\Devel79Tray\SystemTray.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\TrayCommandLineInfo.cpp"
+				RelativePath="..\Devel79Tray\TrayCommandLineInfo.cpp"
 				>
 			</File>
 			<File
@@ -256,31 +256,31 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\..\Devel79Tray\Devel79Tray.h"
+				RelativePath="..\Devel79Tray\Devel79Tray.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\MainFrm.h"
+				RelativePath="..\Devel79Tray\MainFrm.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\Resource.h"
+				RelativePath="..\Devel79Tray\Resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\stdafx.h"
+				RelativePath="..\Devel79Tray\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\SystemTray.h"
+				RelativePath="..\Devel79Tray\SystemTray.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\targetver.h"
+				RelativePath="..\Devel79Tray\targetver.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\TrayCommandLineInfo.h"
+				RelativePath="..\Devel79Tray\TrayCommandLineInfo.h"
 				>
 			</File>
 			<File
@@ -294,19 +294,19 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\..\Devel79Tray\Devel79Tray.rc"
+				RelativePath="..\Devel79Tray\Devel79Tray.rc"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\Resourse\Icon_Server.ico"
+				RelativePath="..\Devel79Tray\Resourse\Icon_Server.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\Resourse\Icon_Server_Run.ico"
+				RelativePath="..\Devel79Tray\Resourse\Icon_Server_Run.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\..\Devel79Tray\Resourse\Icon_Server_Stop.ico"
+				RelativePath="..\Devel79Tray\Resourse\Icon_Server_Stop.ico"
 				>
 			</File>
 		</Filter>
