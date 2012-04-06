@@ -26,28 +26,15 @@ CDevel79TrayApp::CDevel79TrayApp()
 
 CDevel79TrayApp trayApp;
 
-
 // CDevel79TrayApp initialization
 
 BOOL CDevel79TrayApp::InitInstance()
 {
 	CWinApp::InitInstance();
 
-	// Standard initialization
-
-	// To create the main window, this code creates a new frame window
-	// object and then sets it as the application's main window object
-	CMainFrame* pFrame = new CMainFrame;
-	if (!pFrame) {
-		return FALSE;
-	}
-	m_pMainWnd = pFrame;
-	// create and load the frame with its resources
-	pFrame->LoadFrame(IDR_TRAY, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
-
 	CTrayCommandLineInfo cmdLineInfo;
 	ParseCommandLine(cmdLineInfo);
-  
+
 	// Load configuration...
 	if (!vbTray->ReadConfiguration(cmdLineInfo.GetConfigFile())) {
 		ShowError(vbTray->GetErrorMessage());
@@ -61,6 +48,25 @@ BOOL CDevel79TrayApp::InitInstance()
 		Close();
 		return FALSE;
 	}
+ 
+	// Standard initialization
+
+	// To create the main window, this code creates a new frame window
+	// object and then sets it as the application's main window object
+	CMainFrame* pFrame = new CMainFrame(vbTray);
+	if (!pFrame) {
+		return FALSE;
+	}
+	m_pMainWnd = pFrame;
+
+	// create and load the frame with its resources
+	//pFrame->LoadFrame(IDR_TRAY, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
+	if (!pFrame->Create(NULL, _T("Traytest"))) {
+		return FALSE;
+	}
+
+	m_pMainWnd->ShowWindow(SW_HIDE);
+	m_pMainWnd->UpdateWindow();
 
 	// Run server is there is command line argument...
 	if (cmdLineInfo.IsRunServer()) {

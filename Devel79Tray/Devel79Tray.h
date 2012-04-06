@@ -1,34 +1,20 @@
-// Devel79Tray.h : main header file for the Devel79Tray application
-//
 #pragma once
 
 #ifndef __AFXWIN_H__
 	#error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include "resource.h" // main symbols
+#include "resource.h"
 #include "VirtualBoxTray.h"
-
-
-// CDevel79TrayApp:
-// See Devel79Tray.cpp for the implementation of this class
-//
 
 class CDevel79TrayApp : public CWinApp
 {
 public:
+	CVirtualBoxTray* vbTray;
+
 	CDevel79TrayApp();
 	void Close();
-
-
-// Overrides
-public:
 	virtual BOOL InitInstance();
-
-// Implementation
-
-public:
-	CVirtualBoxTray* vbTray;
 
 	DECLARE_MESSAGE_MAP()
 
