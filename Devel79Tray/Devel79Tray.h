@@ -18,6 +18,8 @@ public:
 
 	DECLARE_MESSAGE_MAP()
 
+	afx_msg void OnShowConsole();
+	afx_msg void OnHideConsole();
 	afx_msg void OnStartServer();
 
 private:

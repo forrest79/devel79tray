@@ -11,6 +11,8 @@
 // CDevel79TrayApp
 
 BEGIN_MESSAGE_MAP(CDevel79TrayApp, CWinApp)
+	ON_COMMAND(ID_TRAY_SHOWCONSOLE, &CDevel79TrayApp::OnShowConsole)
+	ON_COMMAND(ID_TRAY_HIDECONSOLE, &CDevel79TrayApp::OnHideConsole)
 	ON_COMMAND(ID_TRAY_STARTSERVER, &CDevel79TrayApp::OnStartServer)
 END_MESSAGE_MAP()
 
@@ -83,6 +85,18 @@ void CDevel79TrayApp::Close()
 }
 
 // CDevel79TrayApp message handlers
+
+//
+void CDevel79TrayApp::OnShowConsole()
+{
+	
+}
+
+//
+void CDevel79TrayApp::OnHideConsole()
+{
+	
+}
 
 //
 void CDevel79TrayApp::OnStartServer()
