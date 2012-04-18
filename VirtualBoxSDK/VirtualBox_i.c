@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Tue Mar 13 14:24:17 2012
+/* at Tue Apr  3 14:54:40 2012
  */
 /* Compiler settings for Z:\home\vbox\tinderbox\4.1-sdk\out\linux.amd64\release\bin\sdk\bindings\mscom\idl\VirtualBox.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -408,7 +408,7 @@ MIDL_DEFINE_GUID(CLSID, CLSID_Session,0x3C02F46D,0xC9D2,0x4F11,0xA3,0x84,0x53,0x
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Tue Mar 13 14:24:17 2012
+/* at Tue Apr  3 14:54:40 2012
  */
 /* Compiler settings for Z:\home\vbox\tinderbox\4.1-sdk\out\linux.amd64\release\bin\sdk\bindings\mscom\idl\VirtualBox.idl:
     Oicf, W1, Zp8, env=Win64 (32b run,appending)

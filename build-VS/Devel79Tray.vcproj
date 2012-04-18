@@ -514,15 +514,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Devel79Tray\Resourse\Icon_Server.ico"
+				RelativePath="..\Devel79Tray\Resourse\Icon-Server-Run.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\Devel79Tray\Resourse\Icon_Server_Run.ico"
+				RelativePath="..\Devel79Tray\Resourse\Icon-Server-Stop.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\Devel79Tray\Resourse\Icon_Server_Stop.ico"
+				RelativePath="..\Devel79Tray\Resourse\Icon-Server.ico"
 				>
 			</File>
 		</Filter>

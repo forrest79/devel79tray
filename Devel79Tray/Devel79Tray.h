@@ -1,3 +1,6 @@
+#ifndef DEVEL79TRAY_H
+#define DEVEL79TRAY_H
+
 #pragma once
 
 #ifndef __AFXWIN_H__
@@ -5,6 +8,7 @@
 #endif
 
 #include "resource.h"
+#include "MainFrm.h"
 #include "VirtualBoxTray.h"
 
 class CDevel79TrayApp : public CWinApp
@@ -23,6 +27,10 @@ public:
 	afx_msg void OnStartServer();
 
 private:
+	CFrameWnd* mainFrame;
+
+	void ShowConsole();
+	void HideConsole();
 	void StartServer();
 
 	void ShowInfo(CString info);
@@ -30,3 +38,5 @@ private:
 };
 
 extern CDevel79TrayApp trayApp;
+
+#endif

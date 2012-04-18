@@ -1,11 +1,18 @@
+#ifndef MAINFRM_H
+#define MAINFRM_H
+
 #pragma once
 
+#include "Devel79Tray.h"
+#include "VirtualBoxTray.h"
 #include "NTray.h"
 
 class CMainFrame : public CFrameWnd
 {
 public:
 	CMainFrame(CVirtualBoxTray* vbTray);
+	void RunServer();
+	void StopServer();
 
 protected:
 	CTrayNotifyIcon trayIcon;
@@ -24,4 +31,4 @@ protected:
 	afx_msg LRESULT OnTrayNotification(WPARAM wParam, LPARAM lParam);
 };
 
-
+#endif

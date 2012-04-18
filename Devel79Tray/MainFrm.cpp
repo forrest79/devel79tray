@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include "Devel79Tray.h"
-
 #include "MainFrm.h"
 
 #define WM_TRAYNOTIFY WM_USER + 100
@@ -22,6 +20,12 @@ CMainFrame::CMainFrame(CVirtualBoxTray* vbTray)
 	iconMain = CTrayNotifyIcon::LoadIcon(IDI_MAIN);
 	iconRun  = CTrayNotifyIcon::LoadIcon(IDI_RUN);
 	iconStop = CTrayNotifyIcon::LoadIcon(IDI_STOP);
+}
+
+//
+void CMainFrame::RunServer()
+{
+	trayIcon.SetIcon(iconStop);
 }
 
 //

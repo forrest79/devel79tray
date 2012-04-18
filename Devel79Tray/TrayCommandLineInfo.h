@@ -1,3 +1,6 @@
+#ifndef TRAYCOMMANDLINEINFO_H
+#define TRAYCOMMANDLINEINFO_H
+
 class CTrayCommandLineInfo : public CCommandLineInfo
 {
 private:
@@ -11,3 +14,5 @@ public:
 	BOOL    IsRunServer();
 	CString GetConfigFile();
 };
+
+#endif

@@ -78,6 +78,18 @@ void CVirtualBoxTray::ReleaseVirtualBox()
 }
 
 //
+BOOL CVirtualBoxTray::ShowConsole()
+{
+	return FALSE;
+}
+
+//
+BOOL CVirtualBoxTray::HideConsole()
+{
+	return FALSE;
+}
+
+//
 BOOL CVirtualBoxTray::StartServer()
 {
 	HRESULT status;
@@ -116,11 +128,13 @@ BOOL CVirtualBoxTray::StartServer()
 	// Wait until VM is running
 	status = progress->WaitForCompletion(-1);
 
+	// 
+
 	// Get console object
-	session->get_Console(&console);
+	//session->get_Console(&console);
 
 	// Bring console window to front
-	vbMachine->ShowConsoleWindow(0);
+	//vbMachine->ShowConsoleWindow(0);
 
 	//printf ("Press enter to power off VM and close the session...\n");
 	//getchar();

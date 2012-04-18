@@ -80,9 +80,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAIN                ICON                    "Resourse\\Icon_Server.ico"
-IDI_RUN                 ICON                    "Resourse\\Icon_Server_Run.ico"
-IDI_STOP                ICON                    "Resourse\\Icon_Server_Stop.ico"
+IDI_MAIN                ICON                    "Resourse\\Icon-Server.ico"
+IDI_RUN                 ICON                    "Resourse\\Icon-Server-Run.ico"
+IDI_STOP                ICON                    "Resourse\\Icon-Server-Stop.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

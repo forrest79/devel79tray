@@ -2,7 +2,6 @@
 #include "afxwinappex.h"
 #include "TrayCommandLineInfo.h"
 #include "Devel79Tray.h"
-#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,15 +54,15 @@ BOOL CDevel79TrayApp::InitInstance()
 
 	// To create the main window, this code creates a new frame window
 	// object and then sets it as the application's main window object
-	CMainFrame* pFrame = new CMainFrame(vbTray);
-	if (!pFrame) {
+	mainFrame = new CMainFrame(vbTray);
+	if (!mainFrame) {
 		return FALSE;
 	}
-	m_pMainWnd = pFrame;
+	m_pMainWnd = mainFrame;
 
 	// create and load the frame with its resources
 	//pFrame->LoadFrame(IDR_TRAY, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
-	if (!pFrame->Create(NULL, _T("Traytest"))) {
+	if (!mainFrame->Create(NULL, _T("Devel79Tray"))) {
 		return FALSE;
 	}
 
@@ -89,7 +88,7 @@ void CDevel79TrayApp::Close()
 //
 void CDevel79TrayApp::OnShowConsole()
 {
-	
+	((CMainFrame*)mainFrame)->RunServer();
 }
 
 //
@@ -105,6 +104,22 @@ void CDevel79TrayApp::OnStartServer()
 }
 
 // PRIVATE
+
+//
+void CDevel79TrayApp::ShowConsole()
+{
+	if (!vbTray->ShowConsole()) {
+		ShowError(vbTray->GetErrorMessage());
+	}
+}
+
+//
+void CDevel79TrayApp::HideConsole()
+{
+	if (!vbTray->HideConsole()) {
+		ShowError(vbTray->GetErrorMessage());
+	}
+}
 
 //
 void CDevel79TrayApp::StartServer()

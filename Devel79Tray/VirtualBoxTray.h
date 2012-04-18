@@ -1,3 +1,6 @@
+#ifndef VIRTUALBOXTRAY_H
+#define VIRTUALBOXTRAY_H
+
 #include "..\VirtualBoxSDK\VirtualBox.h"
 
 class CVirtualBoxTray
@@ -10,6 +13,9 @@ public:
 	BOOL InitVirtualBox();
 	void ReleaseVirtualBox();
 	BOOL ReadConfiguration(CString configFile);
+
+	BOOL ShowConsole();
+	BOOL HideConsole();
 
 	BOOL StartServer();
 
@@ -38,3 +44,5 @@ private:
 	CString ExeDirectory();
 
 };
+
+#endif
