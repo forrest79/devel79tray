@@ -1,19 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using VirtualBox;
 using System.Net.NetworkInformation;
+using System.Text;
 
 namespace Devel79Tray
 {
-    public class VirtualBoxMachine
+    public class VirtualBoxServer
     {
+        private enum Status
+        {
+            NONE,
+            POWEREDOFF,
+            STARTING,
+            RUNNING,
+            STOPING
+        }
+
         private Devel79Tray tray;
 
         private string name;
 
+        private string machine;
+
         private string ip;
 
+        private IVirtualBox vbox;
+
+        private IMachine vboxMachine;
+
+        private Session serverSession;
+
+        private VirtualBoxEventListener eventListener;
+
+        private Status status;
+        
         //TServer tServerCheck = null;
         //Thread checkServerThread = null;
 
@@ -34,52 +54,126 @@ namespace Devel79Tray
         private static string vbIP = "";
         private int vbCheckServer = 60000;
 
-        public VirtualBoxMachine(Devel79Tray tray, String name, String ip)
+        public VirtualBoxServer(Devel79Tray tray, String name, String machine, String ip)
         {
             this.tray = tray;
             this.name = name;
+            this.machine = machine;
             this.ip = ip;
 
-            IVirtualBox vbox = new VirtualBoxClass();
+            this.status = Status.NONE;
+        }
+
+        public void Initialize(bool runServer)
+        {
             try
             {
-                //Session session = new SessionClass();
-                //IMachine machine = vbox.FindMachine("Test");
-                //IProgress progress = machine.LaunchVMProcess(session, "gui", "");
+                vbox = new VirtualBoxClass();
             }
-            catch (Exception e)
+            catch
             {
-                //MessageBox.Show(e.Message);
+                throw new Exception("Error while connecting to VirtualBox.");
+            }
+
+            try
+            {
+                vboxMachine = vbox.FindMachine(machine);
+            }
+            catch
+            {
+                throw new Exception("Machine '" + machine + "' not found.");
+            }
+
+            changeState(vboxMachine.State);
+
+            eventListener = new VirtualBoxEventListener(this);
+            vbox.EventSource.RegisterListener(eventListener, new VBoxEventType[] { VBoxEventType.VBoxEventType_OnMachineStateChanged }, 1);
+        }
+
+        public void Release()
+        {
+            if (eventListener != null)
+            {
+                vbox.EventSource.UnregisterListener(eventListener);
             }
         }
-        /*
-        public static bool TestRunning()
+
+        public void changeState(MachineState state)
         {
-            if (File.Exists(vbDir + "\\VBoxManage.exe"))
+            Status newStatus = status;
+
+            switch (state)
             {
-                Process testServer = new Process();
-                testServer.StartInfo.FileName = vbDir + "\\VBoxManage.exe";
-                testServer.StartInfo.Arguments = "list runningvms";
-                testServer.StartInfo.UseShellExecute = false;
-                testServer.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                testServer.StartInfo.CreateNoWindow = true;
-                testServer.StartInfo.RedirectStandardOutput = true;
-                testServer.Start();
-
-                string output = testServer.StandardOutput.ReadToEnd();
-
-                testServer.WaitForExit(PROCESS_WAIT_FOR_EXIT);
-                testServer.Close();
-
-                return output.Contains("\"" + vbMachine + "\"");
+                case MachineState.MachineState_Running:
+                    newStatus = Status.RUNNING;
+                    break;
+                case MachineState.MachineState_Starting:
+                case MachineState.MachineState_Restoring:
+                    newStatus = Status.STARTING;
+                    break;
+                case MachineState.MachineState_Stopping:
+                case MachineState.MachineState_Saving:
+                    newStatus = Status.STOPING;
+                    break;
+                default :
+                    newStatus = Status.POWEREDOFF;
+                    break;
             }
-            else
+
+            if (newStatus != status)
+            {
+                if (newStatus == Status.POWEREDOFF)
+                {
+                    tray.SetPoweredOff();
+                }
+                else if (newStatus == Status.RUNNING)
+                {
+                    tray.SetRunning();
+                }
+
+                status = newStatus;
+            }
+        }
+
+        public bool StartServer()
+        {
+            if (status != Status.POWEREDOFF)
             {
                 return false;
             }
+
+            try
+            {
+                serverSession = new SessionClass();
+                IProgress progress = vboxMachine.LaunchVMProcess(serverSession, "gui", "");
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
 
-        public bool TestPing()
+        public bool StopServer()
+        {
+            if (status != Status.RUNNING)
+            {
+                return false;
+            }
+
+            //vboxMachine.
+            serverSession.Console.PowerButton();
+
+            return true;
+        }
+
+        public bool RestartServer()
+        {
+            return false;
+        }
+
+        public bool PingServer()
         {
             bool result = false;
 
@@ -98,6 +192,17 @@ namespace Devel79Tray
             return result;
         }
 
+        public string GetName()
+        {
+            return name;
+        }
+
+        public string GetIp()
+        {
+            return ip;
+        }
+
+        /*
         private void StartServer(bool startServer)
         {
             if (!serverIsRunning)
@@ -459,5 +564,23 @@ namespace Devel79Tray
             }
         }
          */
+    }
+
+    public class VirtualBoxEventListener : IEventListener
+    {
+        private VirtualBoxServer vboxServer;
+
+        public VirtualBoxEventListener(VirtualBoxServer vboxServer)
+        {
+            this.vboxServer = vboxServer;
+        }
+
+        void IEventListener.HandleEvent(IEvent aEvent)
+        {
+            if (aEvent is IMachineStateChangedEvent)
+            {
+                vboxServer.changeState(((IMachineStateChangedEvent)aEvent).State);
+            }
+        }
     }
 }

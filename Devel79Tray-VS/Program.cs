@@ -8,22 +8,67 @@ using System.IO;
 
 namespace Devel79Tray
 {
+    /// <summary>
+    /// Main Devel79 Tray class.
+    /// </summary>
     public class Devel79Tray : Form
     {
+        /// <summary>
+        /// Defatul configuration file name.
+        /// </summary>
         private const string DEFAULT_CONFIGURATION_FILE = "devel79.conf";
 
-        private NotifyIcon trayIcon = null;
-        private ContextMenu trayMenu = null;
+        private VirtualBoxServer vboxServer;
 
-        private MenuItem miShowConsole = null;
-        private MenuItem miHideConsole = null;
-        private MenuItem miStart = null;
-        private MenuItem miRestart = null;
-        private MenuItem miStop = null;
-        private MenuItem miTest = null;
+        /// <summary>
+        /// 
+        /// </summary>
+        private NotifyIcon trayIcon;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private ContextMenuStrip trayMenu;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        private ToolStripMenuItem miShowConsole;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private ToolStripMenuItem miHideConsole;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private ToolStripMenuItem miStartServer;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private ToolStripMenuItem miRestartServer;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private ToolStripMenuItem miStopServer;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private ToolStripMenuItem miPingServer;
+
+        /// <summary>
+        /// 
+        /// </summary>
         static Mutex oneInstanceMutex;
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
         [STAThread]
         static void Main(string[] args)
         {
@@ -42,82 +87,106 @@ namespace Devel79Tray
                 }
             }
 
-            ConfigurationReader configurationReader = new ConfigurationReader(Application.StartupPath + "\\" + configurationFile);
+            Devel79Tray devel79Tray;
 
-            Application.Run(new Devel79Tray(runServerAtStartup, configurationReader));
+            try
+            {
+                devel79Tray = new Devel79Tray(runServerAtStartup, new ConfigurationReader(Application.StartupPath + "\\" + configurationFile));
+            }
+            catch
+            {
+                return;
+            }
+
+            Application.Run(devel79Tray);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="runServerAtStartup"></param>
+        /// <param name="configurationReader"></param>
         public Devel79Tray(bool runServerAtStartup, ConfigurationReader configurationReader)  
         {
             // Test only one instace is running...
             if (IsAlreadyRunning())
             {
                 ShowError("Startup error", "Only one instance of Devel79 Tray is allowed.");
-                Application.Exit();
+                throw new Exception();
             }
 
             // Read configuration...
             if (!configurationReader.Read())
             {
                 ShowError("Configuration error", "Configuration file \"" + configurationReader.GetConfigurationFile() + "\" doesn't exist or can't be read.");
-                Application.Exit();
+                throw new Exception();
             }
 
+            // Create VirtualBox machine
+            vboxServer = new VirtualBoxServer(this, configurationReader.GetName(), configurationReader.GetMachine(), configurationReader.GetIp());
+
             // Prepare menu
-            miShowConsole = new MenuItem();
-            miShowConsole.Text = "Show console";
+            miShowConsole = new ToolStripMenuItem("Show &console");
+            miShowConsole.Font = new Font(miShowConsole.Font, miShowConsole.Font.Style | FontStyle.Bold);
             miShowConsole.Visible = false;
-            miShowConsole.Click += ShowConsoleMenu;
+            miShowConsole.Click += MenuShowConsole;
 
-            miHideConsole = new MenuItem();
-            miHideConsole.Text = "Hide console";
+            miHideConsole = new ToolStripMenuItem("Hide &console");
+            miHideConsole.Font = new Font(miShowConsole.Font, miShowConsole.Font.Style | FontStyle.Bold);
             miHideConsole.Visible = false;
-            miHideConsole.Click += HideConsoleMenu;
+            miHideConsole.Click += MenuHideConsole;
 
-            miStart = new MenuItem();
-            miStart.Text = "Start server";
-            miStart.Visible = false;
-            miStart.Click += StartMenu;
+            miStartServer = new ToolStripMenuItem("&Start server");
+            miStartServer.Visible = false;
+            miStartServer.Click += MenuStartServer;
 
-            miStop = new MenuItem();
-            miStop.Text = "Stop server";
-            miStop.Visible = false;
-            miStop.Click += StopMenu;
+            miStopServer = new ToolStripMenuItem("S&top server");
+            miStopServer.Visible = false;
+            miStopServer.Click += MenuStopServer;
 
-            miRestart = new MenuItem();
-            miRestart.Text = "Restart server";
-            miRestart.Visible = false;
-            miRestart.Click += RestartMenu;
+            miRestartServer = new ToolStripMenuItem("&Restart server");
+            miRestartServer.Visible = false;
+            miRestartServer.Click += MenuRestartServer;
 
-            miTest = new MenuItem();
-            miTest.Text = "Test server";
-            miTest.Visible = false;
-            miTest.Click += TestMenu;
+            miPingServer = new ToolStripMenuItem("&Ping server");
+            miPingServer.Visible = false;
+            miPingServer.Click += MenuPingServer;
 
-            trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add(miShowConsole);
-            trayMenu.MenuItems.Add(miHideConsole);
-            trayMenu.MenuItems.Add(miStart);
-            trayMenu.MenuItems.Add(miStop);
-            trayMenu.MenuItems.Add(miRestart);
-            trayMenu.MenuItems.Add(miTest);
-            trayMenu.MenuItems.Add("-");
-            trayMenu.MenuItems.Add("Exit", ExitMenu);  
+            ToolStripMenuItem miExit = new ToolStripMenuItem("E&xit");
+            miExit.Click += MenuExit;
+
+            trayMenu = new ContextMenuStrip();
+            trayMenu.Items.Add(miShowConsole);
+            trayMenu.Items.Add(miHideConsole);
+            trayMenu.Items.Add(miStartServer);
+            trayMenu.Items.Add(miStopServer);
+            trayMenu.Items.Add(miRestartServer);
+            trayMenu.Items.Add(miPingServer);
+            trayMenu.Items.Add("-");
+            trayMenu.Items.Add(miExit);  
 
             trayIcon = new NotifyIcon();
             trayIcon.Text = configurationReader.GetName();
             trayIcon.Icon = Properties.Resources.IconServer;
 
             // Add menu to tray icon and show it.
-            trayIcon.MouseDoubleClick += ConsoleMenu;
-            trayIcon.ContextMenu = trayMenu;
+            trayIcon.MouseDoubleClick += ToggleConsole;
+            trayIcon.ContextMenuStrip = trayMenu;
             trayIcon.Visible = true;
 
-            // Run server
-            //StartServer(runServerAtStartup);
+            // Initialize VirtualBox machine
+            try
+            {
+                vboxServer.Initialize(runServerAtStartup);
+            }
+            catch (Exception e)
+            {
+                ShowError("Error", e.Message);
+                throw e;
+            }
         }
 
-        private void ConsoleMenu(object sender, EventArgs e)
+        private void ToggleConsole(object sender, EventArgs e)
         {
             if (miShowConsole.Visible)
             {
@@ -129,30 +198,33 @@ namespace Devel79Tray
             }
         }
 
-        private void ShowConsoleMenu(object sender, EventArgs e)
+        private void MenuShowConsole(object sender, EventArgs e)
         {
             //ShowConsole();
         }
 
-        private void HideConsoleMenu(object sender, EventArgs e)
+        private void MenuHideConsole(object sender, EventArgs e)
         {
             //HideConsole();
         }
 
-        private void StartMenu(object sender, EventArgs e)
+        private void MenuStartServer(object sender, EventArgs e)
         {
-            //StartServer(true);
+            if (!vboxServer.StartServer())
+            {
+                ShowError("Error", "Server " + vboxServer.GetName() + " is not powered off.");
+            }
         }
 
-        private void StopMenu(object sender, EventArgs e)
+        private void MenuStopServer(object sender, EventArgs e)
         {
-            //if (MessageBox.Show("Do you realy want to stop " + NAME + "?", NAME + " [Stop]", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            //{
-                //StopServer(false, false);
-            //}
+            if (!vboxServer.StopServer())
+            {
+                ShowError("Error", "Server " + vboxServer.GetName() + " is not running.");
+            }
         }
 
-        private void RestartMenu(object sender, EventArgs e)
+        private void MenuRestartServer(object sender, EventArgs e)
         {
             //if (MessageBox.Show("Do you realy want to restart " + NAME + "?", NAME + " [Restart]", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             //{
@@ -160,7 +232,7 @@ namespace Devel79Tray
             //}
         }
 
-        private void TestMenu(object sender, EventArgs e)
+        private void MenuPingServer(object sender, EventArgs e)
         {
             //if (serverIsRunning)
             //{
@@ -170,7 +242,7 @@ namespace Devel79Tray
             //}
         }
 
-        private void ExitMenu(object sender, EventArgs e)
+        private void MenuExit(object sender, EventArgs e)
         {
             //if (serverIsRunning && (MessageBox.Show("Do you want to stop " + NAME + "?", NAME + " [Stop]", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes))
             //{
@@ -185,13 +257,41 @@ namespace Devel79Tray
 
             //    CloseApp();
             //}
+            Application.Exit();
         }
 
+        public void SetPoweredOff()
+        {
+            trayIcon.Icon = Properties.Resources.IconServerStop;
+            miStartServer.Visible = true;
+            miStopServer.Visible = false;
+            miRestartServer.Visible = false;
+            miPingServer.Visible = false;
+        }
+
+        public void SetRunning()
+        {
+            trayIcon.Icon = Properties.Resources.IconServerRun;
+            miStartServer.Visible = false;
+            miStopServer.Visible = true;
+            miRestartServer.Visible = true;
+            miPingServer.Visible = true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="caption"></param>
+        /// <param name="text"></param>
         public void ShowError(string caption, string text)
         {
             MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private static bool IsAlreadyRunning()
         {
             string strLoc = Assembly.GetExecutingAssembly().Location;
@@ -208,6 +308,10 @@ namespace Devel79Tray
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
             Visible = false; // Hide form window.
@@ -216,6 +320,10 @@ namespace Devel79Tray
             base.OnLoad(e);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="isDisposing"></param>
         protected override void Dispose(bool isDisposing)
         {
             if (isDisposing)
@@ -227,6 +335,9 @@ namespace Devel79Tray
             base.Dispose(isDisposing);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void InitializeComponent()
         {
             this.SuspendLayout();
