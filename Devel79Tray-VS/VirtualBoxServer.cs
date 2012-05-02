@@ -1,7 +1,9 @@
 ﻿using System;
-using VirtualBox;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using VirtualBox;
 
 namespace Devel79Tray
 {
@@ -34,25 +36,16 @@ namespace Devel79Tray
 
         private Status status;
         
-        //TServer tServerCheck = null;
-        //Thread checkServerThread = null;
+        private int consoleHWnd;
 
-        int hWnd_Console = 0;
+        private bool consoleVisible;
 
         private const int SW_HIDE = 0;
         private const int SW_NORMAL = 1;
         private const int SW_SHOW = 5;
 
-        public const int PROCESS_WAIT_FOR_EXIT = 5000;
-        public const int STOP_WAIT_FOR_EXIT_SECONDS = 60;
-        public const int STOP_WAIT_FOR_RUN = 100;
-        public const int WAIT_BEFORE_FIRST_CHECK = 10000;
-
-        private bool serverIsRunning = false;
-
-        private static string vbMachine = "";
-        private static string vbIP = "";
-        private int vbCheckServer = 60000;
+        //TServer tServerCheck = null;
+        //Thread checkServerThread = null;
 
         public VirtualBoxServer(Devel79Tray tray, String name, String machine, String ip)
         {
@@ -62,10 +55,14 @@ namespace Devel79Tray
             this.ip = ip;
 
             this.status = Status.NONE;
+
+            this.consoleVisible = false;
         }
 
         public void Initialize(bool runServer)
         {
+            ClearConsoleHWnd();
+
             try
             {
                 vbox = new VirtualBoxClass();
@@ -101,7 +98,7 @@ namespace Devel79Tray
         public void changeState(MachineState state)
         {
             Status newStatus = status;
-
+            Console.WriteLine(state);
             switch (state)
             {
                 case MachineState.MachineState_Running:
@@ -116,6 +113,7 @@ namespace Devel79Tray
                     newStatus = Status.STOPING;
                     break;
                 default :
+                    ClearConsoleHWnd();
                     newStatus = Status.POWEREDOFF;
                     break;
             }
@@ -124,22 +122,27 @@ namespace Devel79Tray
             {
                 if (newStatus == Status.POWEREDOFF)
                 {
-                    tray.SetPoweredOff();
+                    tray.SetServerPoweredOff();
                 }
                 else if (newStatus == Status.RUNNING)
                 {
-                    tray.SetRunning();
+                    if (!consoleVisible)
+                    {
+                        HideConsole();
+                    }
+
+                    tray.SetServerRunning();
                 }
 
                 status = newStatus;
             }
         }
 
-        public bool StartServer()
+        public void StartServer()
         {
             if (status != Status.POWEREDOFF)
             {
-                return false;
+                throw new Exception("Server " + name + " is not powered off.");
             }
 
             try
@@ -149,23 +152,25 @@ namespace Devel79Tray
             }
             catch
             {
-                return false;
+                throw new Exception("Server " + name + " can't be run.");
             }
-
-            return true;
         }
 
-        public bool StopServer()
+        public void StopServer()
         {
             if (status != Status.RUNNING)
             {
-                return false;
+                throw new Exception("Server " + name + " is not running.");
             }
 
-            //vboxMachine.
-            serverSession.Console.PowerButton();
+            if (serverSession == null)
+            {
+                serverSession = new SessionClass();
+            }
 
-            return true;
+            vboxMachine.LockMachine(serverSession, LockType.LockType_Shared);
+            serverSession.Console.PowerButton();
+            serverSession.UnlockMachine();
         }
 
         public bool RestartServer()
@@ -192,63 +197,71 @@ namespace Devel79Tray
             return result;
         }
 
-        public string GetName()
+        public void ShowConsole()
         {
-            return name;
+            //ShowWindow(GetConsoleHWnd(), SW_NORMAL);
+            //ShowWindow(GetConsoleHWnd(), SW_SHOW);
+            //SetForegroundWindow(new IntPtr(GetConsoleHWnd()));
+            if (vboxMachine.CanShowConsoleWindow() != 0)
+            {
+                tray.ShowError("Error", "Window");
+                vboxMachine.ShowConsoleWindow();
+            }
+
+            consoleVisible = true;
+            tray.SetConsoleShown();
         }
 
-        public string GetIp()
+        public void HideConsole()
         {
-            return ip;
+            ShowWindow(GetConsoleHWnd(), SW_HIDE);
+
+            consoleVisible = false;
+            tray.SetConsoleHidden();
         }
+
+        public void ToggleConsole()
+        {
+            if (consoleVisible)
+            {
+                HideConsole();
+            }
+            else
+            {
+                ShowConsole();
+            }
+        }
+
+        private int GetConsoleHWnd()
+        {
+            if (consoleHWnd == 0)
+            {
+                Process[] processRunning = Process.GetProcesses();
+                foreach (Process process in processRunning)
+                {
+                    if ((process.ProcessName.ToLower() == "virtualbox") && (process.MainWindowTitle.ToLower().Contains(machine.ToLower())))
+                    {
+                        consoleHWnd = process.MainWindowHandle.ToInt32();
+                        break;
+                    }
+                }
+            }
+
+            return consoleHWnd;
+        }
+
+        private void ClearConsoleHWnd()
+        {
+            consoleHWnd = 0;
+        }
+
+        [DllImport("User32")]
+        private static extern int ShowWindow(int hWnd, int nCmdShow);
+
+        [DllImport("user32")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         /*
-        private void StartServer(bool startServer)
-        {
-            if (!serverIsRunning)
-            {
-                if (tServerCheck != null)
-                {
-                    tServerCheck.RunCheck(true);
-                }
-
-                TServer tServer = new TServer(this);
-
-                if (startServer)
-                {
-                    tServer.StartServer();
-                }
-
-                Thread startServerThread = new Thread(tServer.Run);
-                startServerThread.Start();
-            }
-        }
-
-        private void StopServer(bool restart, bool exitApp)
-        {
-            if (serverIsRunning)
-            {
-                if (tServerCheck != null)
-                {
-                    tServerCheck.RunCheck(false);
-                }
-
-                TServer tServer = new TServer(this);
-
-                if (restart)
-                {
-                    tServer.RestartServer();
-                }
-                else if (exitApp)
-                {
-                    tServer.ExitApp();
-                }
-
-                Thread stopServerThread = new Thread(tServer.Stop);
-                stopServerThread.Start();
-            }
-        }
-
         public void SetServerStatus(bool run, bool showErrorInfo)
         {
             miStart.Visible = !run;
@@ -290,21 +303,6 @@ namespace Devel79Tray
                 }
                 trayIcon.Text = NAME + " [Stop]";
             }
-        }
-
-        private void CancelThreads()
-        {
-            if ((checkServerThread != null) && checkServerThread.IsAlive)
-            {
-                checkServerThread.Abort();
-            }
-
-            checkServerThread = null;
-        }
-
-        public void SetHWnd_Console(int hWnd)
-        {
-            hWnd_Console = hWnd;
         }
 
         public void HideConsole()
@@ -531,38 +529,6 @@ namespace Devel79Tray
         }
     }
 
-    public class TConsole
-    {
-        private Devel79Tray devel = null;
-
-        public TConsole(Devel79Tray devel)
-        {
-            this.devel = devel;
-        }
-
-        public void Hide()
-        {
-            for (int i = 0; i < Devel79Tray.STOP_WAIT_FOR_RUN; i++)
-            {
-                if (Devel79Tray.TestRunning())
-                {
-                    break;
-                }
-                Thread.Sleep(100);
-            }
-
-            Process[] processRunning = Process.GetProcesses();
-            foreach (Process process in processRunning)
-            {
-                if ((process.ProcessName.ToLower() == "virtualbox") && (process.MainWindowTitle.ToLower().Contains(devel.GetVBMachine().ToLower())))
-                {
-                    devel.SetHWnd_Console(process.MainWindowHandle.ToInt32());
-                    devel.HideConsole();
-
-                    break;
-                }
-            }
-        }
          */
     }
 

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using System.Windows.Forms;
-using System.Text;
-using System.Threading;
-using System.Reflection;
 using System.IO;
+using System.Reflection;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace Devel79Tray
 {
@@ -63,7 +62,22 @@ namespace Devel79Tray
         /// <summary>
         /// 
         /// </summary>
+        private Icon iconRun;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private Icon iconStop;
+
+        /// <summary>
+        /// 
+        /// </summary>
         static Mutex oneInstanceMutex;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public delegate void SetCallback();
         
         /// <summary>
         /// 
@@ -174,6 +188,10 @@ namespace Devel79Tray
             trayIcon.ContextMenuStrip = trayMenu;
             trayIcon.Visible = true;
 
+            // Load icons
+            iconRun = Properties.Resources.IconServerRun;
+            iconStop = Properties.Resources.IconServerStop;
+
             // Initialize VirtualBox machine
             try
             {
@@ -188,39 +206,40 @@ namespace Devel79Tray
 
         private void ToggleConsole(object sender, EventArgs e)
         {
-            if (miShowConsole.Visible)
-            {
-                //ShowConsole();
-            }
-            else if (miHideConsole.Visible)
-            {
-                //HideConsole();
-            }
+            vboxServer.ToggleConsole();
         }
 
         private void MenuShowConsole(object sender, EventArgs e)
         {
-            //ShowConsole();
+            vboxServer.ShowConsole();
         }
 
         private void MenuHideConsole(object sender, EventArgs e)
         {
-            //HideConsole();
+            vboxServer.HideConsole();
         }
 
         private void MenuStartServer(object sender, EventArgs e)
         {
-            if (!vboxServer.StartServer())
+            try
             {
-                ShowError("Error", "Server " + vboxServer.GetName() + " is not powered off.");
+                vboxServer.StartServer();
+            }
+            catch (Exception ex) 
+            {
+                ShowError("Error", ex.Message);
             }
         }
 
         private void MenuStopServer(object sender, EventArgs e)
         {
-            if (!vboxServer.StopServer())
+            try
             {
-                ShowError("Error", "Server " + vboxServer.GetName() + " is not running.");
+                vboxServer.StopServer();
+            }
+            catch (Exception ex)
+            {
+                ShowError("Error", ex.Message);
             }
         }
 
@@ -260,22 +279,66 @@ namespace Devel79Tray
             Application.Exit();
         }
 
-        public void SetPoweredOff()
+        public void SetConsoleHidden()
         {
-            trayIcon.Icon = Properties.Resources.IconServerStop;
-            miStartServer.Visible = true;
-            miStopServer.Visible = false;
-            miRestartServer.Visible = false;
-            miPingServer.Visible = false;
+            if (trayMenu.InvokeRequired)
+            {
+                SetCallback callback = new SetCallback(SetConsoleHidden);
+                this.Invoke(callback);
+            }
+            else
+            {
+                miShowConsole.Visible = true;
+                miHideConsole.Visible = false;
+            }
         }
 
-        public void SetRunning()
+        public void SetConsoleShown()
         {
-            trayIcon.Icon = Properties.Resources.IconServerRun;
-            miStartServer.Visible = false;
-            miStopServer.Visible = true;
-            miRestartServer.Visible = true;
-            miPingServer.Visible = true;
+            if (trayMenu.InvokeRequired)
+            {
+                SetCallback callback = new SetCallback(SetConsoleShown);
+                this.Invoke(callback);
+            }
+            else
+            {
+                miShowConsole.Visible = false;
+                miHideConsole.Visible = true;
+            }
+        }
+
+        public void SetServerPoweredOff()
+        {
+            trayIcon.Icon = iconStop;
+            if (trayMenu.InvokeRequired)
+            {
+                SetCallback callback = new SetCallback(SetServerPoweredOff);
+                this.Invoke(callback);
+            }
+            else
+            {
+                miStartServer.Visible = true;
+                miStopServer.Visible = false;
+                miRestartServer.Visible = false;
+                miPingServer.Visible = false;
+            }
+        }
+
+        public void SetServerRunning()
+        {
+            trayIcon.Icon = iconRun;
+            if (trayMenu.InvokeRequired)
+            {
+                SetCallback callback = new SetCallback(SetServerRunning);
+                this.Invoke(callback);
+            }
+            else
+            {
+                miStartServer.Visible = false;
+                miStopServer.Visible = true;
+                miRestartServer.Visible = true;
+                miPingServer.Visible = true;
+            }
         }
 
         /// <summary>

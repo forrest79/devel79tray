@@ -80,7 +80,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="VirtualBoxMachine.cs" />
+    <Compile Include="VirtualBoxServer.cs" />
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
