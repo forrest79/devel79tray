@@ -245,20 +245,19 @@ namespace Devel79Tray
 
         private void MenuRestartServer(object sender, EventArgs e)
         {
-            //if (MessageBox.Show("Do you realy want to restart " + NAME + "?", NAME + " [Restart]", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            //{
-            //    StopServer(true, false);
-            //}
+            try
+            {
+                vboxServer.RestartServer();
+            }
+            catch (Exception ex)
+            {
+                ShowError("Error", ex.Message);
+            }
         }
 
         private void MenuPingServer(object sender, EventArgs e)
         {
-            //if (serverIsRunning)
-            //{
-            //    TServer tServer = new TServer(this);
-            //    Thread testServerThread = new Thread(tServer.Test);
-            //    testServerThread.Start();
-            //}
+            vboxServer.PingServer();
         }
 
         private void MenuExit(object sender, EventArgs e)
@@ -279,6 +278,9 @@ namespace Devel79Tray
             Application.Exit();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetConsoleHidden()
         {
             if (trayMenu.InvokeRequired)
@@ -293,6 +295,9 @@ namespace Devel79Tray
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetConsoleShown()
         {
             if (trayMenu.InvokeRequired)
@@ -307,6 +312,9 @@ namespace Devel79Tray
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetServerPoweredOff()
         {
             trayIcon.Icon = iconStop;
@@ -324,6 +332,9 @@ namespace Devel79Tray
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetServerRunning()
         {
             trayIcon.Icon = iconRun;
@@ -349,6 +360,26 @@ namespace Devel79Tray
         public void ShowError(string caption, string text)
         {
             MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        public void ShowTrayInfo(string caption, string text)
+        {
+            ShowTrayBalloonTip(caption, text, ToolTipIcon.Info);
+        }
+
+        public void ShowTrayWarning(string caption, string text)
+        {
+            ShowTrayBalloonTip(caption, text, ToolTipIcon.Warning);
+        }
+
+        public void ShowTrayError(string caption, string text)
+        {
+            ShowTrayBalloonTip(caption, text, ToolTipIcon.Error);
+        }
+
+        private void ShowTrayBalloonTip(string caption, string text, ToolTipIcon icon)
+        {
+            trayIcon.ShowBalloonTip(3000, caption, text, icon);
         }
 
         /// <summary>
