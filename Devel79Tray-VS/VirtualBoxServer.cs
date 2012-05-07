@@ -168,7 +168,7 @@ namespace Devel79Tray
             eventListener = new VirtualBoxEventListener(this);
             vbox.EventSource.RegisterListener(eventListener, new VBoxEventType[] { VBoxEventType.VBoxEventType_OnMachineStateChanged }, 1);
 
-            if (runServer)
+            if (runServer && (status == Status.POWEREDOFF))
             {
                 StartServer();
             }
@@ -219,10 +219,9 @@ namespace Devel79Tray
         /// <summary>
         /// Change server state.
         /// </summary>
-        /// <param name="state">Server state.</param>
-        public void ChangeState(MachineState state)
+        public void ChangeState()
         {
-            UpdateState(state, false);
+            UpdateState(vboxMachine.State, false);
         }
 
         /// <summary>
@@ -564,9 +563,9 @@ namespace Devel79Tray
         /// <param name="aEvent">VirtualBox event.</param>
         void IEventListener.HandleEvent(IEvent aEvent)
         {
-            if (aEvent is IMachineStateChangedEvent)
+            if (aEvent.Type == VBoxEventType.VBoxEventType_OnMachineStateChanged)
             {
-                vboxServer.ChangeState(((IMachineStateChangedEvent)aEvent).State);
+                vboxServer.ChangeState();
             }
         }
     }
