@@ -519,14 +519,9 @@ namespace Devel79Tray
 
             if (vboxServer != null)
             {
-                if (e.CloseReason == CloseReason.WindowsShutDown)
+                if (e.CloseReason == CloseReason.ApplicationExitCall)
                 {
-                    e.Cancel = true;
-                    vboxServer.StopServer();
-                }
-                else
-                {
-                    vboxServer.Close();
+                    vboxServer.ApplicationClose();
                 }
 
                 vboxServer.Release();

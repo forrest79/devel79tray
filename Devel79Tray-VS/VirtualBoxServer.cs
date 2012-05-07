@@ -8,17 +8,32 @@ using VirtualBox;
 namespace Devel79Tray
 {
     /// <summary>
-    /// 
+    /// VirtualBox server class.
     /// </summary>
     public class VirtualBoxServer
     {
         /// <summary>
-        /// 
+        /// How many seconds wait for server is start after stop.
         /// </summary>
         private const int WAIT_FOR_RESTART_SERVER_SECONDS = 2;
 
         /// <summary>
-        /// 
+        /// Constant for Win32 function ShowWindow. Window is hide.
+        /// </summary>
+        private const int SW_HIDE = 0;
+
+        /// <summary>
+        /// Constant for Win32 function ShowWindow. Window is normal.
+        /// </summary>
+        private const int SW_NORMAL = 1;
+
+        /// <summary>
+        /// Constant for Win32 function ShowWindow. Window is showen.
+        /// </summary>
+        private const int SW_SHOW = 5;
+
+        /// <summary>
+        /// Server state statuses.
         /// </summary>
         private enum Status
         {
@@ -30,97 +45,82 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Devel79 Tray form.
         /// </summary>
         private Devel79Tray tray;
 
         /// <summary>
-        /// 
+        /// Server name.
         /// </summary>
         private string name;
 
         /// <summary>
-        /// 
+        /// VirtualBox machine name.
         /// </summary>
         private string machine;
 
         /// <summary>
-        /// 
+        /// Server IP address.
         /// </summary>
         private string ip;
 
         /// <summary>
-        /// 
+        /// VirtualBox COM object.
         /// </summary>
         private IVirtualBox vbox;
 
         /// <summary>
-        /// 
+        /// VirtualBox machine COM object.
         /// </summary>
         private IMachine vboxMachine;
 
         /// <summary>
-        /// 
+        /// VirtualBox session COM object.
         /// </summary>
         private Session serverSession;
 
         /// <summary>
-        /// 
+        /// VirtualBox event listener.
         /// </summary>
         private VirtualBoxEventListener eventListener;
 
         /// <summary>
-        /// 
+        /// Actual server status.
         /// </summary>
         private Status status;
         
         /// <summary>
-        /// 
+        /// VirtualBox console hWnd.
         /// </summary>
         private int consoleHWnd;
 
         /// <summary>
-        /// 
+        /// Is VirtualBox console visible.
         /// </summary>
         private bool consoleVisible;
 
         /// <summary>
-        /// 
+        /// VirtualBox machine is starting.
         /// </summary>
         private bool starting;
 
         /// <summary>
-        /// 
+        /// VirtualBox machine is restarting.
         /// </summary>
         private bool restarting;
 
         /// <summary>
-        /// 
+        /// VirtualBox machine is stoping.
         /// </summary>
         private bool stoping;
 
         /// <summary>
-        /// 
+        /// Initialize VirtualBox server class.
         /// </summary>
-        private const int SW_HIDE = 0;
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        private const int SW_NORMAL = 1;
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        private const int SW_SHOW = 5;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tray"></param>
-        /// <param name="name"></param>
-        /// <param name="machine"></param>
-        /// <param name="ip"></param>
+        /// <param name="tray">Devel79 form.</param>
+        /// <param name="name">Server name.</param>
+        /// <param name="machine">VirtualBox machine name.</param>
+        /// <param name="ip">Server IP address.</param>
         public VirtualBoxServer(Devel79Tray tray, String name, String machine, String ip)
         {
             this.tray = tray;
@@ -138,9 +138,9 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Initialize VirtualBox COM.
         /// </summary>
-        /// <param name="runServer"></param>
+        /// <param name="runServer">Run server after initialize.</param>
         public void Initialize(bool runServer)
         {
             ClearConsoleHWnd();
@@ -175,9 +175,9 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Call if application is exiting.
         /// </summary>
-        public void Close()
+        public void ApplicationClose()
         {
             if (status == Status.RUNNING)
             {
@@ -197,7 +197,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Release VirtualBox sever.
         /// </summary>
         public void Release()
         {
@@ -208,28 +208,28 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Set server state.
         /// </summary>
-        /// <param name="state"></param>
+        /// <param name="state">Server state.</param>
         private void SetState(MachineState state)
         {
             UpdateState(state, true);
         }
 
         /// <summary>
-        /// 
+        /// Change server state.
         /// </summary>
-        /// <param name="state"></param>
+        /// <param name="state">Server state.</param>
         public void ChangeState(MachineState state)
         {
             UpdateState(state, false);
         }
 
         /// <summary>
-        /// 
+        /// Update or set server state.
         /// </summary>
-        /// <param name="state"></param>
-        /// <param name="setState"></param>
+        /// <param name="state">Server state.</param>
+        /// <param name="setState">True if set state.</param>
         private void UpdateState(MachineState state, bool setState)
         {
             Status newStatus = status;
@@ -321,7 +321,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Start server.
         /// </summary>
         public void StartServer()
         {
@@ -363,7 +363,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Stop server.
         /// </summary>
         public void StopServer()
         {
@@ -385,7 +385,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Restart server.
         /// </summary>
         public void RestartServer()
         {
@@ -394,7 +394,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Ping server IP address.
         /// </summary>
         public void PingServer()
         {
@@ -409,10 +409,10 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Ping to IP address.
         /// </summary>
-        /// <param name="ip"></param>
-        /// <returns></returns>
+        /// <param name="ip">IP address.</param>
+        /// <returns>Success.</returns>
         private bool Ping(string ip)
         {
             bool result = false;
@@ -433,7 +433,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Show VirtualBox machine console.
         /// </summary>
         public void ShowConsole()
         {
@@ -459,7 +459,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Hide VirtualBox machine console.
         /// </summary>
         public void HideConsole()
         {
@@ -473,7 +473,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Show or hide VirtualBox machine console.
         /// </summary>
         public void ToggleConsole()
         {
@@ -491,9 +491,9 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Resolve VirtualBox machine console hWnd.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>VirtualBox machine console hWnd.</returns>
         private int GetConsoleHWnd()
         {
             if (consoleHWnd == 0)
@@ -513,7 +513,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Clear VirtualBox console hWnd.
         /// </summary>
         private void ClearConsoleHWnd()
         {
@@ -521,47 +521,47 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Win32 function to show or hide window.
         /// </summary>
-        /// <param name="hWnd"></param>
-        /// <param name="nCmdShow"></param>
+        /// <param name="hWnd">Window hWnd.</param>
+        /// <param name="nCmdShow">Window state.</param>
         /// <returns></returns>
         [DllImport("User32")]
         private static extern int ShowWindow(int hWnd, int nCmdShow);
 
         /// <summary>
-        /// 
+        /// Win32 function to move window to foreground.
         /// </summary>
-        /// <param name="hWnd"></param>
-        /// <returns></returns>
+        /// <param name="hWnd">Window hWnd.</param>
+        /// <returns>Window state.</returns>
         [DllImport("user32")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
     }
 
     /// <summary>
-    /// 
+    /// VirtualBox event listener class.
     /// </summary>
     public class VirtualBoxEventListener : IEventListener
     {
         /// <summary>
-        /// 
+        /// VirtualBox server.
         /// </summary>
         private VirtualBoxServer vboxServer;
 
         /// <summary>
-        /// 
+        /// Initialize VirtualBox event listener.
         /// </summary>
-        /// <param name="vboxServer"></param>
+        /// <param name="vboxServer">VirtualBox server.</param>
         public VirtualBoxEventListener(VirtualBoxServer vboxServer)
         {
             this.vboxServer = vboxServer;
         }
 
         /// <summary>
-        /// 
+        /// Listen for VirtualBox events.
         /// </summary>
-        /// <param name="aEvent"></param>
+        /// <param name="aEvent">VirtualBox event.</param>
         void IEventListener.HandleEvent(IEvent aEvent)
         {
             if (aEvent is IMachineStateChangedEvent)
