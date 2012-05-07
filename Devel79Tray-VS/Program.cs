@@ -20,69 +20,69 @@ namespace Devel79Tray
         private VirtualBoxServer vboxServer;
 
         /// <summary>
-        /// 
+        /// Tray icon.
         /// </summary>
         private NotifyIcon trayIcon;
         
         /// <summary>
-        /// 
+        /// Tray menu.
         /// </summary>
         private ContextMenuStrip trayMenu;
 
         /// <summary>
-        /// 
+        /// Menu Show console.
         /// </summary>
         private ToolStripMenuItem miShowConsole;
         
         /// <summary>
-        /// 
+        /// Menu Hide console.
         /// </summary>
         private ToolStripMenuItem miHideConsole;
         
         /// <summary>
-        /// 
+        /// Menu Start server.
         /// </summary>
         private ToolStripMenuItem miStartServer;
         
         /// <summary>
-        /// 
+        /// Menu Restart server.
         /// </summary>
         private ToolStripMenuItem miRestartServer;
         
         /// <summary>
-        /// 
+        /// Menu Stop server.
         /// </summary>
         private ToolStripMenuItem miStopServer;
         
         /// <summary>
-        /// 
+        /// Menu Ping server.
         /// </summary>
         private ToolStripMenuItem miPingServer;
 
         /// <summary>
-        /// 
+        /// Icon server running.
         /// </summary>
         private Icon iconRun;
 
         /// <summary>
-        /// 
+        /// Icon server stop.
         /// </summary>
         private Icon iconStop;
 
         /// <summary>
-        /// 
+        /// Mutex for only one instance testing.
         /// </summary>
         static Mutex oneInstanceMutex;
 
         /// <summary>
-        /// 
+        /// Delegate callback for menu update.
         /// </summary>
         public delegate void SetCallback();
         
         /// <summary>
-        /// 
+        /// Main method.
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="args">Command line arguments</param>
         [STAThread]
         static void Main(string[] args)
         {
@@ -101,14 +101,16 @@ namespace Devel79Tray
                 }
             }
 
-            Devel79Tray devel79Tray;
-
+            
+            Devel79Tray devel79Tray = null;
+            
             try
             {
                 devel79Tray = new Devel79Tray(runServerAtStartup, new ConfigurationReader(Application.StartupPath + "\\" + configurationFile));
             }
-            catch
+            catch (Exception e)
             {
+                ShowError("Inicialization error", e.Message);
                 return;
             }
 
@@ -116,24 +118,22 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Create Devel79Tray.
         /// </summary>
-        /// <param name="runServerAtStartup"></param>
-        /// <param name="configurationReader"></param>
+        /// <param name="runServerAtStartup">Run server at startup.</param>
+        /// <param name="configurationReader">Configuration read from file.</param>
         public Devel79Tray(bool runServerAtStartup, ConfigurationReader configurationReader)  
         {
             // Test only one instace is running...
             if (IsAlreadyRunning())
             {
-                ShowError("Startup error", "Only one instance of Devel79 Tray is allowed.");
-                throw new Exception();
+                throw new Exception("Only one instance of Devel79 Tray is allowed.");
             }
 
             // Read configuration...
             if (!configurationReader.Read())
             {
-                ShowError("Configuration error", "Configuration file \"" + configurationReader.GetConfigurationFile() + "\" doesn't exist or can't be read.");
-                throw new Exception();
+                throw new Exception("Configuration file \"" + configurationReader.GetConfigurationFile() + "\" doesn't exist or can't be read.");
             }
 
             // Create VirtualBox machine
@@ -199,26 +199,45 @@ namespace Devel79Tray
             }
             catch (Exception e)
             {
-                ShowError("Error", e.Message);
                 throw e;
             }
         }
-
+        
+        /// <summary>
+        /// Show or hide console.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ToggleConsole(object sender, EventArgs e)
         {
             vboxServer.ToggleConsole();
         }
 
+        /// <summary>
+        /// Show console.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuShowConsole(object sender, EventArgs e)
         {
             vboxServer.ShowConsole();
         }
 
+        /// <summary>
+        /// Hide console.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuHideConsole(object sender, EventArgs e)
         {
             vboxServer.HideConsole();
         }
 
+        /// <summary>
+        /// Start server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuStartServer(object sender, EventArgs e)
         {
             try
@@ -231,6 +250,11 @@ namespace Devel79Tray
             }
         }
 
+        /// <summary>
+        /// Stop server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuStopServer(object sender, EventArgs e)
         {
             try
@@ -243,6 +267,11 @@ namespace Devel79Tray
             }
         }
 
+        /// <summary>
+        /// Restart server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuRestartServer(object sender, EventArgs e)
         {
             try
@@ -255,31 +284,28 @@ namespace Devel79Tray
             }
         }
 
+        /// <summary>
+        /// Ping server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuPingServer(object sender, EventArgs e)
         {
             vboxServer.PingServer();
         }
 
+        /// <summary>
+        /// Exit application.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MenuExit(object sender, EventArgs e)
         {
-            //if (serverIsRunning && (MessageBox.Show("Do you want to stop " + NAME + "?", NAME + " [Stop]", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes))
-            //{
-            //    StopServer(false, true);
-            //}
-            //else
-            //{
-            //    if (serverIsRunning)
-            //    {
-            //        ShowConsole();
-            //    }
-
-            //    CloseApp();
-            //}
             Application.Exit();
         }
 
         /// <summary>
-        /// 
+        /// Callback called when console is hided.
         /// </summary>
         public void SetConsoleHidden()
         {
@@ -296,7 +322,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Callback called when console is showen.
         /// </summary>
         public void SetConsoleShown()
         {
@@ -313,7 +339,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Callback called when server is powered off.
         /// </summary>
         public void SetServerPoweredOff()
         {
@@ -325,6 +351,8 @@ namespace Devel79Tray
             }
             else
             {
+                miShowConsole.Visible = false;
+                miHideConsole.Visible = false;
                 miStartServer.Visible = true;
                 miStopServer.Visible = false;
                 miRestartServer.Visible = false;
@@ -333,7 +361,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Callback called when server is started.
         /// </summary>
         public void SetServerRunning()
         {
@@ -353,44 +381,81 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Show error message box.
         /// </summary>
-        /// <param name="caption"></param>
-        /// <param name="text"></param>
-        public void ShowError(string caption, string text)
+        /// <param name="caption">Message box caption.</param>
+        /// <param name="text">Message box body.</param>
+        public static void ShowError(string caption, string text)
         {
             MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+        /// <summary>
+        /// Show question box.
+        /// </summary>
+        /// <param name="caption">Question box caption..</param>
+        /// <param name="text">Question box body.</param>
+        /// <returns>Answer Yes=true, No=false</returns>
+        public bool ShowQuestion(string caption, string text)
+        {
+            if (MessageBox.Show(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Show info in tray icon.
+        /// </summary>
+        /// <param name="caption">Info caption.</param>
+        /// <param name="text">Info text.</param>
         public void ShowTrayInfo(string caption, string text)
         {
             ShowTrayBalloonTip(caption, text, ToolTipIcon.Info);
         }
 
+        /// <summary>
+        /// Show warning in tray icon.
+        /// </summary>
+        /// <param name="caption">Warning caption.</param>
+        /// <param name="text">Warning text.</param>
         public void ShowTrayWarning(string caption, string text)
         {
             ShowTrayBalloonTip(caption, text, ToolTipIcon.Warning);
         }
 
+        /// <summary>
+        /// Show error in tray icon.
+        /// </summary>
+        /// <param name="caption">Error caption.</param>
+        /// <param name="text">Error text.</param>
         public void ShowTrayError(string caption, string text)
         {
             ShowTrayBalloonTip(caption, text, ToolTipIcon.Error);
         }
 
+        /// <summary>
+        /// Show tray icon balloon tip with icon.
+        /// </summary>
+        /// <param name="caption">Balloon tip caption.</param>
+        /// <param name="text">Balloon tip text.</param>
+        /// <param name="icon">Balloon tip icon.</param>
         private void ShowTrayBalloonTip(string caption, string text, ToolTipIcon icon)
         {
             trayIcon.ShowBalloonTip(3000, caption, text, icon);
         }
 
         /// <summary>
-        /// 
+        /// Check if another instance of application is already running.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if another instance is running, false otherwise.</returns>
         private static bool IsAlreadyRunning()
         {
-            string strLoc = Assembly.GetExecutingAssembly().Location;
+            string location = Assembly.GetExecutingAssembly().Location;
 
-            FileSystemInfo fileInfo = new FileInfo(strLoc);
+            FileSystemInfo fileInfo = new FileInfo(location);
             string sExeName = fileInfo.Name;
             oneInstanceMutex = new Mutex(true, sExeName);
 
@@ -403,7 +468,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Set form properties.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
@@ -415,7 +480,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Dispose form.
         /// </summary>
         /// <param name="isDisposing"></param>
         protected override void Dispose(bool isDisposing)
@@ -430,7 +495,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// 
+        /// Initialize form component.
         /// </summary>
         private void InitializeComponent()
         {
@@ -438,9 +503,34 @@ namespace Devel79Tray
             // 
             // Devel79Tray
             // 
-            this.ClientSize = new System.Drawing.Size(100, 100);
+            this.ClientSize = new System.Drawing.Size(116, 100);
             this.Name = "Devel79Tray";
             this.ResumeLayout(false);
+
+        }
+
+        /// <summary>
+        /// Form closing.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            if (vboxServer != null)
+            {
+                if (e.CloseReason == CloseReason.WindowsShutDown)
+                {
+                    e.Cancel = true;
+                    vboxServer.StopServer();
+                }
+                else
+                {
+                    vboxServer.Close();
+                }
+
+                vboxServer.Release();
+            }
         }
 
     }

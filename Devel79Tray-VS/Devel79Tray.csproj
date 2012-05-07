@@ -61,7 +61,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="VirtualBox, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\_TEMP\VirtualBoxSDK-4.1.12-77245\lib\VirtualBox.dll</HintPath>
+      <HintPath>Assembly\VirtualBox.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
