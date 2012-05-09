@@ -1,7 +1,7 @@
 Devel79 Tray © Jakub Trmota, 2012 (http://forrest79.net)
 
 
-Virtual Box developer server tray icon.
+VirtualBox developer server tray icon.
 
 
 HOW TO USE:
@@ -25,6 +25,7 @@ Restart server - if server is running, stop and start server
 Stop server - if server is running, stop server
 Ping server - if server is running, ping to server IP address a show result
 Exit - exit tray icon, if server is running, show question for stop server or show VirtualBox console if is hidden
+
 
 HISTORY
 =======
