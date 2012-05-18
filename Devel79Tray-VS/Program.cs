@@ -17,6 +17,9 @@ namespace Devel79Tray
         /// </summary>
         private const string DEFAULT_CONFIGURATION_FILE = "devel79.conf";
 
+        /// <summary>
+        /// VirtualBox wrapper.
+        /// </summary>
         private VirtualBoxServer vboxServer;
 
         /// <summary>
@@ -72,12 +75,12 @@ namespace Devel79Tray
         /// <summary>
         /// Mutex for only one instance testing.
         /// </summary>
-        static Mutex oneInstanceMutex;
+        private static Mutex oneInstanceMutex;
 
         /// <summary>
         /// Delegate callback for menu update.
         /// </summary>
-        public delegate void SetCallback();
+        private delegate void SetCallback();
         
         /// <summary>
         /// Main method.
