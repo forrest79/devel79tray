@@ -290,11 +290,6 @@ namespace Devel79Tray
                     HideConsole();
                 }
 
-                if (serverSession != null)
-                {
-                    serverSession.UnlockMachine();
-                }
-
                 if (restarting)
                 {
                     restarting = false;
@@ -378,6 +373,10 @@ namespace Devel79Tray
 
             stoping = true;
 
+            if (serverSession.State == SessionState.SessionState_Locked)
+            {
+                serverSession.UnlockMachine();
+            }
             vboxMachine.LockMachine(serverSession, LockType.LockType_Shared);
             serverSession.Console.PowerButton();
             serverSession.UnlockMachine();

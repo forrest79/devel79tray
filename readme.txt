@@ -32,6 +32,7 @@ HISTORY
 1.0.0 [2010-01-01] - First public version in C#
 2.0.0 [2012-05-07] - Rewritten using VirtualBox SDK, icons changed.
 2.0.1 [2012-05-28] - Update to VirtualBoxSDK-4.1.16-78094.
+2.0.2 [2012-06-06] - Bug fix, bad state detection when external server start after server stop.
 
 
 REQUIREMENTS
