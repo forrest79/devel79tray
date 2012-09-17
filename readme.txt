@@ -34,6 +34,7 @@ HISTORY
 2.0.1 [2012-05-28] - Update to VirtualBoxSDK-4.1.16-78094.
 2.0.2 [2012-06-06] - Bug fix, bad state detection when external server start after server stop.
 2.0.3 [2012-06-23] - Update to VirtualBoxSDK-4.1.18-78361.
+2.0.4 [2012-09-17] - Update to VirtualBoxSDK-4.2.0-80737.
 
 
 REQUIREMENTS
