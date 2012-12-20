@@ -18,19 +18,9 @@ namespace Devel79Tray
         private const int WAIT_FOR_RESTART_SERVER_SECONDS = 2;
 
         /// <summary>
-        /// Constant for Win32 function ShowWindow. Window is hide.
-        /// </summary>
-        private const int SW_HIDE = 0;
-
-        /// <summary>
-        /// Constant for Win32 function ShowWindow. Window is normal.
-        /// </summary>
-        private const int SW_NORMAL = 1;
-
-        /// <summary>
         /// Constant for Win32 function ShowWindow. Window is showen.
         /// </summary>
-        private const int SW_SHOW = 5;
+        private const int SW_RESTORE = 9;
 
         /// <summary>
         /// Server state statuses.
@@ -65,6 +55,11 @@ namespace Devel79Tray
         private string ip;
 
         /// <summary>
+        /// SSH client shell command.
+        /// </summary>
+        private string ssh;
+
+        /// <summary>
         /// VirtualBox COM object.
         /// </summary>
         private IVirtualBox vbox;
@@ -90,14 +85,9 @@ namespace Devel79Tray
         private Status status;
         
         /// <summary>
-        /// VirtualBox console hWnd.
+        /// SSH client process.
         /// </summary>
-        private int consoleHWnd;
-
-        /// <summary>
-        /// Is VirtualBox console visible.
-        /// </summary>
-        private bool consoleVisible;
+        private Process sshProcess;
 
         /// <summary>
         /// VirtualBox machine is starting.
@@ -121,16 +111,16 @@ namespace Devel79Tray
         /// <param name="name">Server name.</param>
         /// <param name="machine">VirtualBox machine name.</param>
         /// <param name="ip">Server IP address.</param>
-        public VirtualBoxServer(Devel79Tray tray, String name, String machine, String ip)
+        /// <param name="ssh">SSH client shell command.</param>
+        public VirtualBoxServer(Devel79Tray tray, String name, String machine, String ip, String ssh)
         {
             this.tray = tray;
             this.name = name;
             this.machine = machine;
             this.ip = ip;
+            this.ssh = ssh;
 
             this.status = Status.NONE;
-
-            this.consoleVisible = false;
 
             this.starting = false;
             this.restarting = false;
@@ -143,8 +133,6 @@ namespace Devel79Tray
         /// <param name="runServer">Run server after initialize.</param>
         public void Initialize(bool runServer)
         {
-            ClearConsoleHWnd();
-
             try
             {
                 vbox = new VirtualBoxClass();
@@ -185,14 +173,6 @@ namespace Devel79Tray
                 {
                     StopServer();
                 }
-                else
-                {
-                    ShowConsole();
-                }
-            }
-            else
-            {
-                ShowConsole();
             }
         }
 
@@ -203,7 +183,14 @@ namespace Devel79Tray
         {
             if (eventListener != null)
             {
-                vbox.EventSource.UnregisterListener(eventListener);
+                try
+                {
+                    vbox.EventSource.UnregisterListener(eventListener);
+                }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    eventListener = null; // Better system shutdown handle...
+                }
             }
         }
 
@@ -246,7 +233,6 @@ namespace Devel79Tray
                     newStatus = Status.STOPING;
                     break;
                 default :
-                    ClearConsoleHWnd();
                     newStatus = Status.POWEREDOFF;
                     break;
             }
@@ -260,6 +246,8 @@ namespace Devel79Tray
 
             if (newStatus == Status.POWEREDOFF)
             {
+                KillConsole();
+
                 if (restarting)
                 {
                     StartServer();
@@ -281,15 +269,6 @@ namespace Devel79Tray
             }
             else if (newStatus == Status.RUNNING)
             {
-                if (consoleVisible)
-                {
-                    ShowConsole();
-                }
-                else
-                {
-                    HideConsole();
-                }
-
                 if (restarting)
                 {
                     restarting = false;
@@ -343,7 +322,7 @@ namespace Devel79Tray
                     starting = true;
 
                     serverSession = new SessionClass();
-                    IProgress progress = vboxMachine.LaunchVMProcess(serverSession, "gui", "");
+                    IProgress progress = vboxMachine.LaunchVMProcess(serverSession, "headless", "");
                 }
                 else if (restarting)
                 {
@@ -396,13 +375,20 @@ namespace Devel79Tray
         /// </summary>
         public void PingServer()
         {
-            if (Ping(ip))
+            try
             {
-                tray.ShowTrayInfo("Ping [OK]", "Successfully ping " + name + " (" + machine + "@" + ip + ")");
+                if (Ping(ip))
+                {
+                    tray.ShowTrayInfo("Ping [OK]", "Successfully ping " + name + " (" + machine + "@" + ip + ")");
+                }
+                else
+                {
+                    tray.ShowTrayWarning("Ping [TIMEOUT]", "Ping " + name + " (" + machine + "@" + ip + ") timeout.");
+                }
             }
-            else
+            catch (System.ComponentModel.Win32Exception)
             {
-                tray.ShowTrayWarning("Ping [TIMEOUT]", "Ping " + name + " (" + machine + "@" + ip + ") timeout.");
+                tray.ShowTrayError("Ping [ERROR]", "An error occured while ping to " + name + " (" + machine + "@" + ip + ").");
             }
         }
 
@@ -431,91 +417,76 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Show VirtualBox machine console.
+        /// Show SSH client.
         /// </summary>
         public void ShowConsole()
         {
             if (status == Status.RUNNING)
             {
-                if (vboxMachine.CanShowConsoleWindow() != 0)
+                if (IsConsoleRunning())
                 {
-                    int hWnd = (int)vboxMachine.ShowConsoleWindow();
-                    ShowWindow(hWnd, SW_NORMAL);
-                    ShowWindow(hWnd, SW_SHOW);
-                    SetForegroundWindow(new IntPtr(hWnd));
-                }
-                else
-                {
-                    ShowWindow(GetConsoleHWnd(), SW_NORMAL);
-                    ShowWindow(GetConsoleHWnd(), SW_SHOW);
-                    SetForegroundWindow(new IntPtr(GetConsoleHWnd()));
-                }
-
-                consoleVisible = true;
-                tray.SetConsoleShown();
-            }
-        }
-
-        /// <summary>
-        /// Hide VirtualBox machine console.
-        /// </summary>
-        public void HideConsole()
-        {
-            if (status == Status.RUNNING)
-            {
-                ShowWindow(GetConsoleHWnd(), SW_HIDE);
-
-                consoleVisible = false;
-                tray.SetConsoleHidden();
-            }
-        }
-
-        /// <summary>
-        /// Show or hide VirtualBox machine console.
-        /// </summary>
-        public void ToggleConsole()
-        {
-            if (status == Status.RUNNING)
-            {
-                if (consoleVisible)
-                {
-                    HideConsole();
-                }
-                else
-                {
-                    ShowConsole();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Resolve VirtualBox machine console hWnd.
-        /// </summary>
-        /// <returns>VirtualBox machine console hWnd.</returns>
-        private int GetConsoleHWnd()
-        {
-            if (consoleHWnd == 0)
-            {
-                Process[] processRunning = Process.GetProcesses();
-                foreach (Process process in processRunning)
-                {
-                    if ((process.ProcessName.ToLower() == "virtualbox") && (process.MainWindowTitle.ToLower().Contains(machine.ToLower())))
+                    IntPtr hWnd = sshProcess.MainWindowHandle;
+                    
+                    if (IsIconic(hWnd))
                     {
-                        consoleHWnd = process.MainWindowHandle.ToInt32();
-                        break;
+                        ShowWindow(hWnd, SW_RESTORE);
+                    }
+
+                    SetForegroundWindow(hWnd);
+                }
+                else
+                {
+                    sshProcess = new System.Diagnostics.Process();
+
+                    try
+                    {
+                        string[] sshClient = ssh.Split(new Char[] { ' ', '\t' }, 2);
+
+                        switch (sshClient.Length) {
+                            case 1:
+                                sshProcess.StartInfo.FileName = sshClient[0];
+                                break;
+                            case 2:
+                                sshProcess.StartInfo.Arguments = sshClient[1];
+                                goto case 1;
+                            default :
+                                return;
+                        }
+
+                        sshProcess.Start();
+                    }
+                    catch (System.ComponentModel.Win32Exception)
+                    {
+                        tray.ShowTrayError("SSH client [ERROR]", "Can't run SSH client: '" + ssh + "'");
                     }
                 }
             }
-
-            return consoleHWnd;
         }
 
         /// <summary>
-        /// Clear VirtualBox console hWnd.
+        /// Kill SSH client process.
         /// </summary>
-        private void ClearConsoleHWnd()
+        public void KillConsole()
         {
-            consoleHWnd = 0;
+            if (IsConsoleRunning())
+            {
+                sshProcess.Kill();
+                sshProcess = null;
+            }
+        }
+
+        /// <summary>
+        /// Check if SSH client is running.
+        /// </summary>
+        /// <returns>true if SSH client is running.</returns>
+        public bool IsConsoleRunning()
+        {
+            if (sshProcess == null)
+            {
+                return false;
+            }
+
+            return !sshProcess.HasExited;
         }
 
         /// <summary>
@@ -525,16 +496,23 @@ namespace Devel79Tray
         /// <param name="nCmdShow">Window state.</param>
         /// <returns></returns>
         [DllImport("User32")]
-        private static extern int ShowWindow(int hWnd, int nCmdShow);
+        private static extern int ShowWindow(IntPtr hWnd, int nCmdShow);
 
         /// <summary>
         /// Win32 function to move window to foreground.
         /// </summary>
         /// <param name="hWnd">Window hWnd.</param>
         /// <returns>Window state.</returns>
-        [DllImport("user32")]
+        [DllImport("User32")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        /// <summary>
+        /// Win32 function to check window minized state.
+        /// </summary>
+        /// <param name="hWnd">Windows hWnd.</param>
+        /// <returns>True if minimized.</returns>
+        [DllImport("User32")]
+        private static extern bool IsIconic(IntPtr hWnd);
     }
 
     /// <summary>

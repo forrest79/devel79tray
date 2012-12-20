@@ -23,6 +23,11 @@ namespace Devel79Tray
         private VirtualBoxServer vboxServer;
 
         /// <summary>
+        /// Email monitor service.
+        /// </summary>
+        private EmailMonitor emailMonitor;
+
+        /// <summary>
         /// Tray icon.
         /// </summary>
         private NotifyIcon trayIcon;
@@ -36,11 +41,6 @@ namespace Devel79Tray
         /// Menu Show console.
         /// </summary>
         private ToolStripMenuItem miShowConsole;
-        
-        /// <summary>
-        /// Menu Hide console.
-        /// </summary>
-        private ToolStripMenuItem miHideConsole;
         
         /// <summary>
         /// Menu Start server.
@@ -63,6 +63,16 @@ namespace Devel79Tray
         private ToolStripMenuItem miPingServer;
 
         /// <summary>
+        /// Seperator for menu Open email directory.
+        /// </summary>
+        private ToolStripSeparator miOpenEmailDirectorySeparator;
+
+        /// <summary>
+        /// Menu Open email directory.
+        /// </summary>
+        private ToolStripMenuItem miOpenEmailDirectory;
+
+        /// <summary>
         /// Icon server running.
         /// </summary>
         private Icon iconRun;
@@ -81,6 +91,11 @@ namespace Devel79Tray
         /// Delegate callback for menu update.
         /// </summary>
         private delegate void SetCallback();
+
+        /// <summary>
+        /// Balloon tip click callback.
+        /// </summary>
+        private ICallable trayCallback;
         
         /// <summary>
         /// Main method.
@@ -109,7 +124,8 @@ namespace Devel79Tray
             
             try
             {
-                devel79Tray = new Devel79Tray(runServerAtStartup, new ConfigurationReader(Application.StartupPath + "\\" + configurationFile));
+                devel79Tray = new Devel79Tray();
+                devel79Tray.Initialize(runServerAtStartup, new ConfigurationReader(Application.StartupPath + "\\" + configurationFile));
             }
             catch (Exception e)
             {
@@ -123,35 +139,13 @@ namespace Devel79Tray
         /// <summary>
         /// Create Devel79Tray.
         /// </summary>
-        /// <param name="runServerAtStartup">Run server at startup.</param>
-        /// <param name="configurationReader">Configuration read from file.</param>
-        public Devel79Tray(bool runServerAtStartup, ConfigurationReader configurationReader)  
+        public Devel79Tray()  
         {
-            // Test only one instace is running...
-            if (IsAlreadyRunning())
-            {
-                throw new Exception("Only one instance of Devel79 Tray is allowed.");
-            }
-
-            // Read configuration...
-            if (!configurationReader.Read())
-            {
-                throw new Exception("Configuration file \"" + configurationReader.GetConfigurationFile() + "\" doesn't exist or can't be read.");
-            }
-
-            // Create VirtualBox machine
-            vboxServer = new VirtualBoxServer(this, configurationReader.GetName(), configurationReader.GetMachine(), configurationReader.GetIp());
-
             // Prepare menu
             miShowConsole = new ToolStripMenuItem("Show &console");
             miShowConsole.Font = new Font(miShowConsole.Font, miShowConsole.Font.Style | FontStyle.Bold);
             miShowConsole.Visible = false;
             miShowConsole.Click += MenuShowConsole;
-
-            miHideConsole = new ToolStripMenuItem("Hide &console");
-            miHideConsole.Font = new Font(miShowConsole.Font, miShowConsole.Font.Style | FontStyle.Bold);
-            miHideConsole.Visible = false;
-            miHideConsole.Click += MenuHideConsole;
 
             miStartServer = new ToolStripMenuItem("&Start server");
             miStartServer.Visible = false;
@@ -169,31 +163,73 @@ namespace Devel79Tray
             miPingServer.Visible = false;
             miPingServer.Click += MenuPingServer;
 
+            miOpenEmailDirectorySeparator = new ToolStripSeparator();
+            miOpenEmailDirectorySeparator.Visible = false;
+
+            miOpenEmailDirectory = new ToolStripMenuItem("&Open email directory");
+            miOpenEmailDirectory.Visible = false;
+            miOpenEmailDirectory.Click += MenuOpenEmailDirectory;
+
             ToolStripMenuItem miExit = new ToolStripMenuItem("E&xit");
             miExit.Click += MenuExit;
 
             trayMenu = new ContextMenuStrip();
             trayMenu.Items.Add(miShowConsole);
-            trayMenu.Items.Add(miHideConsole);
             trayMenu.Items.Add(miStartServer);
             trayMenu.Items.Add(miStopServer);
             trayMenu.Items.Add(miRestartServer);
             trayMenu.Items.Add(miPingServer);
-            trayMenu.Items.Add("-");
+            trayMenu.Items.Add(miOpenEmailDirectorySeparator);
+            trayMenu.Items.Add(miOpenEmailDirectory);
+            trayMenu.Items.Add(new ToolStripSeparator());
             trayMenu.Items.Add(miExit);  
 
             trayIcon = new NotifyIcon();
-            trayIcon.Text = configurationReader.GetName();
             trayIcon.Icon = Properties.Resources.IconServer;
 
             // Add menu to tray icon and show it.
-            trayIcon.MouseDoubleClick += ToggleConsole;
+            trayIcon.MouseDoubleClick += MenuShowConsole;
+            trayIcon.BalloonTipClicked += BalloonTipClicked;
+            trayIcon.BalloonTipClosed += BalloonTipClosed;
             trayIcon.ContextMenuStrip = trayMenu;
-            trayIcon.Visible = true;
+            trayIcon.Visible = false;
 
             // Load icons
             iconRun = Properties.Resources.IconServerRun;
             iconStop = Properties.Resources.IconServerStop;
+
+        }
+
+        /// <summary>
+        /// Initialize Devel79 Tray.
+        /// </summary>
+        /// <param name="runServerAtStartup">Run server at startup.</param>
+        /// <param name="configurationReader">Configuration read from file.</param>
+        public void Initialize(bool runServerAtStartup, ConfigurationReader configurationReader)
+        {
+            // Test only one instace is running...
+            if (IsAlreadyRunning())
+            {
+                throw new Exception("Only one instance of Devel79 Tray is allowed.");
+            }
+
+            // Read configuration...
+            if (!configurationReader.Read())
+            {
+                throw new Exception("Configuration file \"" + configurationReader.GetConfigurationFile() + "\" doesn't exist or can't be read.");
+            }
+
+            // Create VirtualBox machine
+            vboxServer = new VirtualBoxServer(this, configurationReader.GetName(), configurationReader.GetMachine(), configurationReader.GetIp(), configurationReader.getSsh());
+
+            // Create email monitor service
+            emailMonitor = new EmailMonitor(this, configurationReader.getEmail());
+
+            // Tray update
+            trayIcon.Text = configurationReader.GetName();
+            miOpenEmailDirectorySeparator.Visible = emailMonitor.IsActive();
+            miOpenEmailDirectory.Visible = emailMonitor.IsActive();
+            trayIcon.Visible = true;
 
             // Initialize VirtualBox machine
             try
@@ -202,18 +238,9 @@ namespace Devel79Tray
             }
             catch (Exception e)
             {
+                trayIcon.Visible = false;
                 throw e;
             }
-        }
-        
-        /// <summary>
-        /// Show or hide console.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ToggleConsole(object sender, EventArgs e)
-        {
-            vboxServer.ToggleConsole();
         }
 
         /// <summary>
@@ -224,16 +251,6 @@ namespace Devel79Tray
         private void MenuShowConsole(object sender, EventArgs e)
         {
             vboxServer.ShowConsole();
-        }
-
-        /// <summary>
-        /// Hide console.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MenuHideConsole(object sender, EventArgs e)
-        {
-            vboxServer.HideConsole();
         }
 
         /// <summary>
@@ -298,6 +315,16 @@ namespace Devel79Tray
         }
 
         /// <summary>
+        /// Open email directory.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MenuOpenEmailDirectory(object sender, EventArgs e)
+        {
+            emailMonitor.OpenEmailDirectory();
+        }
+
+        /// <summary>
         /// Exit application.
         /// </summary>
         /// <param name="sender"></param>
@@ -308,39 +335,29 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Callback called when console is hided.
+        /// Clear click callback.
         /// </summary>
-        public void SetConsoleHidden()
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void BalloonTipClosed(object sender, EventArgs e)
         {
-            if (trayMenu.InvokeRequired)
-            {
-                SetCallback callback = new SetCallback(SetConsoleHidden);
-                this.Invoke(callback);
-            }
-            else
-            {
-                miShowConsole.Visible = true;
-                miHideConsole.Visible = false;
-            }
+            trayCallback = null;
         }
 
         /// <summary>
-        /// Callback called when console is showen.
+        /// Call click callback, if there is one.
         /// </summary>
-        public void SetConsoleShown()
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void BalloonTipClicked(object sender, EventArgs e)
         {
-            if (trayMenu.InvokeRequired)
+            if (trayCallback != null)
             {
-                SetCallback callback = new SetCallback(SetConsoleShown);
-                this.Invoke(callback);
-            }
-            else
-            {
-                miShowConsole.Visible = false;
-                miHideConsole.Visible = true;
+                trayCallback.Call();
+                trayCallback = null;
             }
         }
-
+        
         /// <summary>
         /// Callback called when server is powered off.
         /// </summary>
@@ -355,11 +372,11 @@ namespace Devel79Tray
             else
             {
                 miShowConsole.Visible = false;
-                miHideConsole.Visible = false;
                 miStartServer.Visible = true;
                 miStopServer.Visible = false;
                 miRestartServer.Visible = false;
                 miPingServer.Visible = false;
+
             }
         }
 
@@ -376,6 +393,7 @@ namespace Devel79Tray
             }
             else
             {
+                miShowConsole.Visible = true;
                 miStartServer.Visible = false;
                 miStopServer.Visible = true;
                 miRestartServer.Visible = true;
@@ -416,7 +434,19 @@ namespace Devel79Tray
         /// <param name="text">Info text.</param>
         public void ShowTrayInfo(string caption, string text)
         {
-            ShowTrayBalloonTip(caption, text, ToolTipIcon.Info);
+            ShowTrayBalloonTip(3000, caption, text, ToolTipIcon.Info);
+        }
+
+        /// <summary>
+        /// Show info in tray and register click callback.
+        /// </summary>
+        /// <param name="caption">Info caption.</param>
+        /// <param name="text">Info text.</param>
+        /// <param name="callback">Click callback.</param>
+        public void ShowTrayInfo(string caption, string text, ICallable callback)
+        {
+            trayCallback = callback;
+            ShowTrayBalloonTip(5000, caption, text, ToolTipIcon.Info);
         }
 
         /// <summary>
@@ -426,7 +456,7 @@ namespace Devel79Tray
         /// <param name="text">Warning text.</param>
         public void ShowTrayWarning(string caption, string text)
         {
-            ShowTrayBalloonTip(caption, text, ToolTipIcon.Warning);
+            ShowTrayBalloonTip(3000, caption, text, ToolTipIcon.Warning);
         }
 
         /// <summary>
@@ -436,18 +466,19 @@ namespace Devel79Tray
         /// <param name="text">Error text.</param>
         public void ShowTrayError(string caption, string text)
         {
-            ShowTrayBalloonTip(caption, text, ToolTipIcon.Error);
+            ShowTrayBalloonTip(3000, caption, text, ToolTipIcon.Error);
         }
 
         /// <summary>
         /// Show tray icon balloon tip with icon.
         /// </summary>
+        /// <param name="timeout">Balloon tip timeout in ms.</param>
         /// <param name="caption">Balloon tip caption.</param>
         /// <param name="text">Balloon tip text.</param>
         /// <param name="icon">Balloon tip icon.</param>
-        private void ShowTrayBalloonTip(string caption, string text, ToolTipIcon icon)
+        private void ShowTrayBalloonTip(int timeout, string caption, string text, ToolTipIcon icon)
         {
-            trayIcon.ShowBalloonTip(3000, caption, text, icon);
+            trayIcon.ShowBalloonTip(timeout, caption, text, icon);
         }
 
         /// <summary>
@@ -531,5 +562,16 @@ namespace Devel79Tray
             }
         }
 
+    }
+
+    /// <summary>
+    /// Callback interface.
+    /// </summary>
+    public interface ICallable
+    {
+        /// <summary>
+        /// Call on callback.
+        /// </summary>
+        void Call();
     }
 }

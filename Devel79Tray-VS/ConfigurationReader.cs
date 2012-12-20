@@ -23,6 +23,11 @@ namespace Devel79Tray
         private const string DEFAULT_IP = "192.168.56.1";
 
         /// <summary>
+        /// Default SSH client shell command.
+        /// </summary>
+        private const string DEFAULT_SSH = "ssh devel@devel79";
+
+        /// <summary>
         /// Absolute path to configuration file.
         /// </summary>
         private string configurationFile;
@@ -38,9 +43,19 @@ namespace Devel79Tray
         private string machine;
 
         /// <summary>
-        /// Server IP address
+        /// Server IP address.
         /// </summary>
         private string ip;
+
+        /// <summary>
+        /// SSH client shell command.
+        /// </summary>
+        private string ssh;
+
+        /// <summary>
+        /// Email directory to monitor.
+        /// </summary>
+        private string email;
 
         /// <summary>
         /// Class constructor.
@@ -52,6 +67,8 @@ namespace Devel79Tray
             this.name = DEFAULT_NAME;
             this.machine = DEFAULT_MACHINE;
             this.ip = DEFAULT_IP;
+            this.ssh = DEFAULT_SSH;
+            this.email = null;
         }
 
         /// <summary>
@@ -84,14 +101,20 @@ namespace Devel79Tray
 
                         switch (key)
                         {
-                            case "name":
+                            case "name" :
                                 name = value;
                                 break;
-                            case "machine":
+                            case "machine" :
                                 machine = value;
                                 break;
-                            case "ip":
+                            case "ip" :
                                 ip = value;
+                                break;
+                            case "ssh":
+                                ssh = value;
+                                break;
+                            case "email":
+                                email = value;
                                 break;
                         }
                     }
@@ -142,6 +165,24 @@ namespace Devel79Tray
         public string GetIp()
         {
             return ip;
+        }
+
+        /// <summary>
+        /// Return SSH client shell command.
+        /// </summary>
+        /// <returns></returns>
+        public string getSsh()
+        {
+            return ssh;
+        }
+
+        /// <summary>
+        /// Return email directory to monitor.
+        /// </summary>
+        /// <returns></returns>
+        public string getEmail()
+        {
+            return email;
         }
     }
 }
