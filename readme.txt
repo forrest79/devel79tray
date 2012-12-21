@@ -40,7 +40,7 @@ HISTORY
 2.0.2 [2012-06-06] - Bug fix, bad state detection when external server start after server stop.
 2.0.3 [2012-06-23] - Update to VirtualBoxSDK-4.1.18-78361.
 2.0.4 [2012-09-17] - Update to VirtualBoxSDK-4.2.0-80737.
-2.1.0 [2012-12-20] - Run server in headless mode, replace VirtualBox console with SSH client, add email monitoring, update to VirtualBoxSDK-4.2.4-81684
+2.1.0 [2012-12-20] - Run server in headless mode, replace VirtualBox console with SSH client, add email monitoring, update to VirtualBoxSDK-4.2.6-82870
 
 REQUIREMENTS
 ============
