@@ -7,7 +7,7 @@ using System.Resources;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Devel79 - Tray")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Tray icon and control utility for Devel79 Server.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Forrest79.net")]
 [assembly: AssemblyProduct("Devel79 Server - Tray Icon")]
@@ -33,6 +33,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.0.4.0")]
-[assembly: AssemblyFileVersion("2.0.4.0")]
+[assembly: AssemblyVersion("2.1.0.0")]
+[assembly: AssemblyFileVersion("2.1.0.0")]
 [assembly: NeutralResourcesLanguageAttribute("en")]

@@ -38,26 +38,29 @@ namespace Devel79Tray
             this.tray = tray;
             this.directory = directory;
 
-            this.active = true;
+            this.active = false;
 
-            if (Directory.Exists(directory))
+            if (directory != null)
             {
-                try
+                if (Directory.Exists(directory))
                 {
-                    this.fileSystemWatcher = new FileSystemWatcher(directory);
-                    this.fileSystemWatcher.EnableRaisingEvents = true;
-                    this.fileSystemWatcher.Created += new FileSystemEventHandler(EmailCreated);
+                    try
+                    {
+                        this.fileSystemWatcher = new FileSystemWatcher(directory);
+                        this.fileSystemWatcher.EnableRaisingEvents = true;
+                        this.fileSystemWatcher.Created += new FileSystemEventHandler(EmailCreated);
+
+                        this.active = true;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("Email monitor service: " + e.Message);
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    this.active = false;
-                    throw new Exception("Email monitor service: " + e.Message);
+                    throw new Exception("Email monitor service: directory '" + directory + "' does not exists.");
                 }
-            }
-            else
-            {
-                this.active = false;
-                throw new Exception("Email monitor service: directory '" + directory + "' does not exists.");
             }
         }
 

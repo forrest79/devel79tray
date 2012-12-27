@@ -171,6 +171,7 @@ namespace Devel79Tray
             {
                 if (tray.ShowQuestion("Server is running", "Do you want to stop server?"))
                 {
+                    KillConsole();
                     StopServer();
                 }
             }
