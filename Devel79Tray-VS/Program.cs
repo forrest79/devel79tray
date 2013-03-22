@@ -105,7 +105,7 @@ namespace Devel79Tray
         static void Main(string[] args)
         {
             bool runServerAtStartup = false;
-            string configurationFile = DEFAULT_CONFIGURATION_FILE;
+            string configurationFile = Application.StartupPath + "\\" + DEFAULT_CONFIGURATION_FILE;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -125,7 +125,7 @@ namespace Devel79Tray
             try
             {
                 devel79Tray = new Devel79Tray();
-                devel79Tray.Initialize(runServerAtStartup, new ConfigurationReader(Application.StartupPath + "\\" + configurationFile));
+                devel79Tray.Initialize(runServerAtStartup, new ConfigurationReader(configurationFile));
             }
             catch (Exception e)
             {
