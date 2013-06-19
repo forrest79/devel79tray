@@ -42,6 +42,7 @@ HISTORY
 2.0.4 [2012-09-17] - Update to VirtualBoxSDK-4.2.0-80737.
 2.1.0 [2012-12-20] - Run server in headless mode, replace VirtualBox console with SSH client, add email monitoring, update to VirtualBoxSDK-4.2.6-82870
 2.1.1 [2013-03-22] - Custom configuration file may not be in the directory with the application, update to VirtualBoxSDK-4.2.10-84104.
+2.1.2 [2013-04-28] - Update to VirtualBoxSDK-4.2.12-84980.
 
 REQUIREMENTS
 ============
