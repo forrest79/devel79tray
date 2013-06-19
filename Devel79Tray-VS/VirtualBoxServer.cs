@@ -4,6 +4,8 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 using VirtualBox;
+using System.Collections;
+using System.Threading;
 
 namespace Devel79Tray
 {
@@ -25,7 +27,7 @@ namespace Devel79Tray
         /// <summary>
         /// Server state statuses.
         /// </summary>
-        private enum Status
+        public enum Status
         {
             NONE,
             POWEREDOFF,
@@ -50,14 +52,14 @@ namespace Devel79Tray
         private string machine;
 
         /// <summary>
-        /// Server IP address.
+        /// Server name set after stop.
         /// </summary>
-        private string ip;
+        private string nameAfterStop;
 
         /// <summary>
-        /// SSH client shell command.
+        /// VirtualBox machine name after stop.
         /// </summary>
-        private string ssh;
+        private string machineAfterStop;
 
         /// <summary>
         /// VirtualBox COM object.
@@ -108,17 +110,9 @@ namespace Devel79Tray
         /// Initialize VirtualBox server class.
         /// </summary>
         /// <param name="tray">Devel79 form.</param>
-        /// <param name="name">Server name.</param>
-        /// <param name="machine">VirtualBox machine name.</param>
-        /// <param name="ip">Server IP address.</param>
-        /// <param name="ssh">SSH client shell command.</param>
-        public VirtualBoxServer(Devel79Tray tray, String name, String machine, String ip, String ssh)
+        public VirtualBoxServer(Devel79Tray tray)
         {
             this.tray = tray;
-            this.name = name;
-            this.machine = machine;
-            this.ip = ip;
-            this.ssh = ssh;
 
             this.status = Status.NONE;
 
@@ -131,7 +125,7 @@ namespace Devel79Tray
         /// Initialize VirtualBox COM.
         /// </summary>
         /// <param name="runServer">Run server after initialize.</param>
-        public void Initialize(bool runServer)
+        public void Initialize()
         {
             try
             {
@@ -139,8 +133,48 @@ namespace Devel79Tray
             }
             catch
             {
-                throw new Exception("Error while connecting to VirtualBox.");
+                throw new VirtualBoxServerException("Error while connecting to VirtualBox.");
             }
+
+            eventListener = new VirtualBoxEventListener(this);
+            vbox.EventSource.RegisterListener(eventListener, new VBoxEventType[] { VBoxEventType.VBoxEventType_OnMachineStateChanged }, 1);
+        }
+
+        /// <summary>
+        /// Register new server.
+        /// </summary>
+        /// <param name="name">Server name</param>
+        /// <param name="machine">VirtualBox machine name</param>
+        public void RegisterServer(string name, string machine)
+        {
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(machine))
+            {
+                throw new VirtualBoxServerException("You must specify name and machine.");
+            }
+
+            if (this.machine == machine)
+            {
+                return;
+            }
+
+            if (vboxMachine != null)
+            {
+                switch (GetStatus())
+                {
+                    case Status.RUNNING :
+                        ChangeServer(name, machine);
+                        return;
+                    case Status.STARTING :
+                    case Status.STOPING :
+                        return;
+                }
+            }
+
+            this.name = name;
+            this.machine = machine;
+
+            this.nameAfterStop = null;
+            this.machineAfterStop = null;
 
             try
             {
@@ -148,18 +182,10 @@ namespace Devel79Tray
             }
             catch
             {
-                throw new Exception("Machine '" + machine + "' not found.");
+                throw new VirtualBoxServerException("Machine '" + machine + "' not found.");
             }
 
             SetState(vboxMachine.State);
-
-            eventListener = new VirtualBoxEventListener(this);
-            vbox.EventSource.RegisterListener(eventListener, new VBoxEventType[] { VBoxEventType.VBoxEventType_OnMachineStateChanged }, 1);
-
-            if (runServer && (status == Status.POWEREDOFF))
-            {
-                StartServer();
-            }
         }
 
         /// <summary>
@@ -193,6 +219,24 @@ namespace Devel79Tray
                     eventListener = null; // Better system shutdown handle...
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Status GetStatus()
+        {
+            return status;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string GetMachine()
+        {
+            return machine;
         }
 
         /// <summary>
@@ -251,6 +295,12 @@ namespace Devel79Tray
 
                 if (restarting)
                 {
+                    if (!string.IsNullOrEmpty(nameAfterStop) && !string.IsNullOrEmpty(machineAfterStop))
+                    {
+                        RegisterServer(nameAfterStop, machineAfterStop);
+                        restarting = false;
+                    }
+
                     StartServer();
                 }
                 else if (!setState)
@@ -299,9 +349,14 @@ namespace Devel79Tray
         /// </summary>
         public void StartServer()
         {
+            if (vboxMachine == null)
+            {
+                throw new VirtualBoxServerException("No server is registered.");
+            }
+
             if (status != Status.POWEREDOFF)
             {
-                throw new Exception("Server " + name + " is not powered off.");
+                throw new VirtualBoxServerException("Server " + name + " is not powered off.");
             }
 
             try
@@ -332,7 +387,7 @@ namespace Devel79Tray
             }
             catch
             {
-                throw new Exception("Server " + name + " can't be run.");
+                throw new VirtualBoxServerException("Server " + name + " can't be run.");
             }
         }
 
@@ -341,9 +396,14 @@ namespace Devel79Tray
         /// </summary>
         public void StopServer()
         {
+            if (vboxMachine == null)
+            {
+                throw new VirtualBoxServerException("No server is registered.");
+            }
+
             if (status != Status.RUNNING)
             {
-                throw new Exception("Server " + name + " is not running.");
+                throw new VirtualBoxServerException("Server " + name + " is not running.");
             }
 
             if (serverSession == null)
@@ -372,56 +432,154 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Ping server IP address.
+        /// Change running server.
         /// </summary>
-        public void PingServer()
+        /// <param name="name">Server name</param>
+        /// <param name="machine">VirtualBox machine name</param>
+        private void ChangeServer(string name, string machine)
         {
+            restarting = true;
+
+            nameAfterStop = name;
+            machineAfterStop = machine;
+
+            StopServer();
+        }
+
+        /// <summary>
+        /// Check if server is running.
+        /// </summary>
+        /// <param name="machine">Machine name</param>
+        /// <returns>True if server is running, false otherwise</returns>
+        public static bool IsServerRunning(string machine)
+        {
+            IVirtualBox vbox;
+
             try
             {
-                if (Ping(ip))
-                {
-                    tray.ShowTrayInfo("Ping [OK]", "Successfully ping " + name + " (" + machine + "@" + ip + ")");
-                }
-                else
-                {
-                    tray.ShowTrayWarning("Ping [TIMEOUT]", "Ping " + name + " (" + machine + "@" + ip + ") timeout.");
-                }
+                vbox = new VirtualBoxClass();
             }
-            catch (System.ComponentModel.Win32Exception)
+            catch
             {
-                tray.ShowTrayError("Ping [ERROR]", "An error occured while ping to " + name + " (" + machine + "@" + ip + ").");
+                throw new VirtualBoxServerException("Error while connecting to VirtualBox.");
             }
+
+            IMachine server;
+
+            try
+            {
+                server = vbox.FindMachine(machine);
+            }
+            catch
+            {
+                throw new VirtualBoxServerException("Server '" + machine + "' not found.");
+            }
+
+            return server.State == MachineState.MachineState_Running;
         }
 
         /// <summary>
         /// Ping to IP address.
         /// </summary>
-        /// <param name="ip">IP address.</param>
-        /// <returns>Success.</returns>
-        private bool Ping(string ip)
+        /// <param name="ip">IP address</param>
+        public void PingServer(string ip)
         {
-            bool result = false;
-
-            Ping pingSender = new Ping();
-            PingOptions options = new PingOptions();
-            options.DontFragment = true;
-            byte[] buffer = Encoding.ASCII.GetBytes("ping");
-            int timeout = 120;
-            PingReply reply = pingSender.Send(ip, timeout, buffer, options);
-
-            if (reply.Status == IPStatus.Success)
+            ThreadPool.QueueUserWorkItem(delegate
             {
-                result = true;
+                Ping ping = new Ping();
+                PingReply pingReply = ping.Send(ip, 5000);
+
+                try
+                {
+                    if (pingReply.Status == IPStatus.Success)
+                    {
+                        tray.ShowTrayInfo("Ping [OK]", "Successfully ping " + name + " in " + pingReply.RoundtripTime + "ms (" + machine + "@" + pingReply.Address + ")");
+                    }
+                    else
+                    {
+                        tray.ShowTrayWarning("Ping [" + pingReply.Status.ToString().ToUpper() + "]", "Ping " + name + " (" + machine + "@" + ip + ") " + pingReply.Status.ToString().ToLower() + ".");
+                    }
+                }
+                catch
+                {
+                    tray.ShowTrayError("Ping [ERROR]", "An error occured while ping to " + name + " (" + machine + "@" + ip + ").");
+                }
+            });
+        }
+
+        /// <summary>
+        /// Run command and read output.
+        /// </summary>
+        /// <param name="name">Command name</param>
+        /// <param name="command">Command executables</param>
+        public void RunCommand(string name, string command)
+        {
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(command))
+            {
+                throw new VirtualBoxServerException("Command and name can't be empty.");
             }
 
-            return result;
+            string[] cmd = command.Split(new Char[] { ' ', '\t' }, 2);
+
+
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                Process process = new Process();
+
+                switch (cmd.Length)
+                {
+                    case 1:
+                        process.StartInfo.FileName = cmd[0];
+                        break;
+                    case 2:
+                        process.StartInfo.Arguments = cmd[1];
+                        goto case 1;
+                    default:
+                        return;
+                }
+
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.CreateNoWindow = true;
+
+                try
+                {
+                    process.Start();
+
+                    string output = process.StandardOutput.ReadToEnd();
+
+                    if (!process.WaitForExit(15000))
+                    {
+                        process.Kill();
+                        return;
+                    }
+
+                    if (process.ExitCode != 0)
+                    {
+                        tray.ShowTrayError(name, "Exit code: " + process.ExitCode.ToString() + "." + (string.IsNullOrEmpty(output) ? "" : "\n" + output));
+                        return;
+                    }
+
+                    tray.ShowTrayInfo(name, string.IsNullOrEmpty(output) ? "Command was successfully run." : output);
+                }
+                catch (Exception e)
+                {
+                    tray.ShowTrayError(name, "Error while running command: " + e.Message);
+                }
+            });
         }
 
         /// <summary>
         /// Show SSH client.
         /// </summary>
-        public void ShowConsole()
+        /// <param name="sshCommand">Command to run SSH console</param>
+        public void ShowConsole(string sshCommand)
         {
+            if (string.IsNullOrEmpty(sshCommand)) 
+            {
+                throw new VirtualBoxServerException("SSH command can't be empty.");
+            }
+
             if (status == Status.RUNNING)
             {
                 if (IsConsoleRunning())
@@ -441,7 +599,7 @@ namespace Devel79Tray
 
                     try
                     {
-                        string[] sshClient = ssh.Split(new Char[] { ' ', '\t' }, 2);
+                        string[] sshClient = sshCommand.Split(new Char[] { ' ', '\t' }, 2);
 
                         switch (sshClient.Length) {
                             case 1:
@@ -458,7 +616,7 @@ namespace Devel79Tray
                     }
                     catch (System.ComponentModel.Win32Exception)
                     {
-                        tray.ShowTrayError("SSH client [ERROR]", "Can't run SSH client: '" + ssh + "'");
+                        tray.ShowTrayError("SSH client [ERROR]", "Can't run SSH client for " + name + ": '" + sshCommand + "'");
                     }
                 }
             }
@@ -480,7 +638,7 @@ namespace Devel79Tray
         /// Check if SSH client is running.
         /// </summary>
         /// <returns>true if SSH client is running.</returns>
-        public bool IsConsoleRunning()
+        private bool IsConsoleRunning()
         {
             if (sshProcess == null)
             {
@@ -545,6 +703,28 @@ namespace Devel79Tray
             {
                 vboxServer.ChangeState();
             }
+        }
+    }
+
+    /// <summary>
+    /// VirtualBox server exception.
+    /// </summary>
+    public class VirtualBoxServerException : ProgramException
+    {
+
+        /// <summary>
+        /// Blank initialization.
+        /// </summary>
+        public VirtualBoxServerException()
+        {
+        }
+
+        /// <summary>
+        /// Initialization with message.
+        /// </summary>
+        /// <param name="message"></param>
+        public VirtualBoxServerException(string message) : base(message)
+        {
         }
     }
 }

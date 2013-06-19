@@ -1,4 +1,4 @@
-Devel79 Tray © Jakub Trmota, 2012 (http://forrest79.net)
+Devel79 Tray © Jakub Trmota, 2013 (http://forrest79.net)
 
 
 VirtualBox developer server tray icon.
@@ -6,17 +6,19 @@ VirtualBox developer server tray icon.
 
 HOW TO USE:
 ===========
-devel79tray [--runserver|-r] [--config|-c filename]
+devel79tray [--run|-r] [--default|-d machine] [--config|-c filename]
 
-Settings: --runserver, -r  run VirtualBox machine after application starts
+Settings: --run, -r        run first or default VirtualBox machine after application starts (canceled if another server from list is already running)
+          --default, -d    specify default machine
           --config, -c     specify filename with configuration (default is "devel79.conf" in application directory)
 
-Configuration file:
+Configuration file (make one or more [server] sections):
 name = Server name to display
 machine = VirtualBox machine name (case sensitive)
 ip = VirtualBox Network adapter IP address (used for ping command)
 ssh = shell connect command to SSH server (used for Show console, can be Putty, ssh from msys or other SSH client)
-email = directory witch is watching for new saved email
+email = directory witch is watching for new saved email (optional)
+command = command to run in format NAME : COMMAND, example: Clear cache : ssh devel@devel79 clear-cache (optional, can be multiple commands)
 
 Tray icon menu:
 Double click - if server is running show VirtualBox console (SSH client)
@@ -25,6 +27,8 @@ Start server - if server is not running, start server
 Restart server - if server is running, stop and start server
 Stop server - if server is running, stop server
 Ping server - if server is running, ping to server IP address a show result
+Commands - if server has one or more commands, run command
+Servers - if there is more than one server, switch to other server
 Open email directory - open email directory in Windows Explorer
 Exit - exit tray icon, if server is running, show question for stop server
 
@@ -43,6 +47,7 @@ HISTORY
 2.1.0 [2012-12-20] - Run server in headless mode, replace VirtualBox console with SSH client, add email monitoring, update to VirtualBoxSDK-4.2.6-82870
 2.1.1 [2013-03-22] - Custom configuration file may not be in the directory with the application, update to VirtualBoxSDK-4.2.10-84104.
 2.1.2 [2013-04-28] - Update to VirtualBoxSDK-4.2.12-84980.
+3.0.0 [2013-06-19] - New version with more servers, running commands (in new thread) and run ping in new thread.
 
 REQUIREMENTS
 ============

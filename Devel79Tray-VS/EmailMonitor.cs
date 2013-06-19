@@ -32,15 +32,20 @@ namespace Devel79Tray
         /// Initialize monitor.
         /// </summary>
         /// <param name="tray">Main program.</param>
-        /// <param name="directory">Directory to watch.</param>
-        public EmailMonitor(Devel79Tray tray, String directory)
+        public EmailMonitor(Devel79Tray tray)
         {
             this.tray = tray;
-            this.directory = directory;
 
             this.active = false;
+        }
 
-            if (directory != null)
+        /// <summary>
+        /// Start monitoring in monitor.
+        /// </summary>
+        /// <param name="directory">Directory to monitor</param>
+        public void StartMonitoring(string directory)
+        {
+            if (!IsActive())
             {
                 if (Directory.Exists(directory))
                 {
@@ -50,17 +55,40 @@ namespace Devel79Tray
                         this.fileSystemWatcher.EnableRaisingEvents = true;
                         this.fileSystemWatcher.Created += new FileSystemEventHandler(EmailCreated);
 
+                        this.directory = directory;
+
                         this.active = true;
                     }
                     catch (Exception e)
                     {
-                        throw new Exception("Email monitor service: " + e.Message);
+                        throw new EmailMonitorException("Email monitor service: " + e.Message);
                     }
                 }
                 else
                 {
-                    throw new Exception("Email monitor service: directory '" + directory + "' does not exists.");
+                    throw new EmailMonitorException("Email monitor service: directory '" + directory + "' does not exists.");
                 }
+            }
+            else
+            {
+                throw new EmailMonitorException("Email monitor service: service is already active.");
+            }
+        }
+
+        /// <summary>
+        /// Stop email monitoring.
+        /// </summary>
+        public void StopMonitoring()
+        {
+            if (IsActive())
+            {
+                this.fileSystemWatcher.EnableRaisingEvents = false;
+                this.fileSystemWatcher.Created -= new FileSystemEventHandler(EmailCreated);
+                this.fileSystemWatcher = null;
+            }
+            else
+            {
+                throw new EmailMonitorException("Email monitor service: service is not active.");
             }
         }
 
@@ -91,13 +119,20 @@ namespace Devel79Tray
         /// </summary>
         public void OpenEmailDirectory()
         {
-            if (Directory.Exists(directory))
+            if (IsActive())
             {
-                System.Diagnostics.Process.Start(directory);
+                if (Directory.Exists(directory))
+                {
+                    System.Diagnostics.Process.Start(directory);
+                }
+                else
+                {
+                    tray.ShowTrayError("Email monitor [ERROR]", "Directory '" + directory + "' does not exists.");
+                }
             }
             else
             {
-                tray.ShowTrayError("Email monitor [ERROR]", "Directory '" + directory + "' does not exists.");
+                throw new EmailMonitorException("Email monitor service: service is not active.");
             }
         }
 
@@ -108,14 +143,22 @@ namespace Devel79Tray
         /// <param name="filename">Full file path.</param>
         public void OpenEmail(string name, string filename)
         {
-            if (File.Exists(filename))
+            if (IsActive())
             {
-                System.Diagnostics.Process.Start(filename);
+                if (File.Exists(filename))
+                {
+                    System.Diagnostics.Process.Start(filename);
+                }
+                else
+                {
+                    tray.ShowTrayError("Email monitor [ERROR]", "Email '" + name + "' does not exists.");
+                }
             }
             else
             {
-                tray.ShowTrayError("Email monitor [ERROR]", "Email '" + name + "' does not exists.");
+                throw new EmailMonitorException("Email monitor service: service is not active.");
             }
+
         }
     }
 
@@ -159,5 +202,28 @@ namespace Devel79Tray
         {
             emailMonitor.OpenEmail(name, filename);
         }
+    }
+
+    /// <summary>
+    /// Email monitor exception.
+    /// </summary>
+    public class EmailMonitorException : ProgramException
+    {
+
+        /// <summary>
+        /// Blank initialization.
+        /// </summary>
+        public EmailMonitorException()
+        {
+        }
+
+        /// <summary>
+        /// Initialization with message.
+        /// </summary>
+        /// <param name="message"></param>
+        public EmailMonitorException(string message) : base(message)
+        {
+        }
+
     }
 }

@@ -3,6 +3,8 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Collections;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace Devel79Tray
@@ -16,6 +18,16 @@ namespace Devel79Tray
         /// Defatul configuration file name.
         /// </summary>
         private const string DEFAULT_CONFIGURATION_FILE = "devel79.conf";
+
+        /// <summary>
+        /// Servers list.
+        /// </summary>
+        private Dictionary<string, Server> servers;
+
+        /// <summary>
+        /// Active server.
+        /// </summary>
+        private Server activeServer;
 
         /// <summary>
         /// VirtualBox wrapper.
@@ -41,12 +53,12 @@ namespace Devel79Tray
         /// Menu Show console.
         /// </summary>
         private ToolStripMenuItem miShowConsole;
-        
+
         /// <summary>
         /// Menu Start server.
         /// </summary>
         private ToolStripMenuItem miStartServer;
-        
+
         /// <summary>
         /// Menu Restart server.
         /// </summary>
@@ -61,6 +73,26 @@ namespace Devel79Tray
         /// Menu Ping server.
         /// </summary>
         private ToolStripMenuItem miPingServer;
+
+        /// <summary>
+        /// Seperator for menu with commands.
+        /// </summary>
+        private ToolStripSeparator miCommandsSeparator;
+
+        /// <summary>
+        /// Menu with commands.
+        /// </summary>
+        private ToolStripMenuItem miCommands;
+
+        /// <summary>
+        /// Seperator for menu with servers.
+        /// </summary>
+        private ToolStripSeparator miServersSeparator;
+
+        /// <summary>
+        /// Menu with servers.
+        /// </summary>
+        private ToolStripMenuItem miServers;
 
         /// <summary>
         /// Seperator for menu Open email directory.
@@ -104,32 +136,49 @@ namespace Devel79Tray
         [STAThread]
         static void Main(string[] args)
         {
+            string defaultServer = null;
             bool runServerAtStartup = false;
             string configurationFile = Application.StartupPath + "\\" + DEFAULT_CONFIGURATION_FILE;
 
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i].ToLower().Equals("--runserver") || args[i].ToLower().Equals("-r"))
+                if (args[i].ToLower().Equals("--default") || args[i].ToLower().Equals("-d"))
+                {
+                    if ((args.Length <= i) || (args[i + 1].StartsWith("-")))
+                    {
+                        ShowError("Inicialization error", "No server for --default parameter specified.");
+                    }
+                    defaultServer = args[++i];
+                }
+                else if (args[i].ToLower().Equals("--run") || args[i].ToLower().Equals("-r"))
                 {
                     runServerAtStartup = true;
                 }
                 else if ((args[i].ToLower().Equals("--config") || args[i].ToLower().Equals("-c")) && (args.Length > i))
                 {
+                    if ((args.Length <= i) || (args[i + 1].StartsWith("-")))
+                    {
+                        ShowError("Inicialization error", "No file for --config parameter specified.");
+                    }
                     configurationFile = args[++i];
                 }
             }
-
             
             Devel79Tray devel79Tray = null;
-            
+
             try
             {
                 devel79Tray = new Devel79Tray();
-                devel79Tray.Initialize(runServerAtStartup, new ConfigurationReader(configurationFile));
+                devel79Tray.Initialize(new ConfigurationReader(configurationFile), defaultServer, runServerAtStartup);
+            }
+            catch (ProgramException e)
+            {
+                ShowError("Inicialization error", e.Message);
+                return;
             }
             catch (Exception e)
             {
-                ShowError("Inicialization error", e.Message);
+                ShowError("Unhandled inicialization exception", "Message: " + e.Message + "\nSource: " + e.Source + "\nStack trace: " + e.StackTrace);
                 return;
             }
 
@@ -163,6 +212,18 @@ namespace Devel79Tray
             miPingServer.Visible = false;
             miPingServer.Click += MenuPingServer;
 
+            miServersSeparator = new ToolStripSeparator();
+            miServersSeparator.Visible = false;
+
+            miServers = new ToolStripMenuItem("&Servers");
+            miServers.Visible = false;
+
+            miCommandsSeparator = new ToolStripSeparator();
+            miCommandsSeparator.Visible = false;
+
+            miCommands = new ToolStripMenuItem("&Commands");
+            miCommands.Visible = false;
+
             miOpenEmailDirectorySeparator = new ToolStripSeparator();
             miOpenEmailDirectorySeparator.Visible = false;
 
@@ -179,6 +240,10 @@ namespace Devel79Tray
             trayMenu.Items.Add(miStopServer);
             trayMenu.Items.Add(miRestartServer);
             trayMenu.Items.Add(miPingServer);
+            trayMenu.Items.Add(miCommandsSeparator);
+            trayMenu.Items.Add(miCommands);
+            trayMenu.Items.Add(miServersSeparator);
+            trayMenu.Items.Add(miServers);
             trayMenu.Items.Add(miOpenEmailDirectorySeparator);
             trayMenu.Items.Add(miOpenEmailDirectory);
             trayMenu.Items.Add(new ToolStripSeparator());
@@ -203,40 +268,81 @@ namespace Devel79Tray
         /// <summary>
         /// Initialize Devel79 Tray.
         /// </summary>
-        /// <param name="runServerAtStartup">Run server at startup.</param>
         /// <param name="configurationReader">Configuration read from file.</param>
-        public void Initialize(bool runServerAtStartup, ConfigurationReader configurationReader)
+        /// <param name="defaultServer">Server name to be default at startup.</param>
+        /// <param name="runServerAtStartup">Server name to run at startup.</param>
+        public void Initialize(ConfigurationReader configurationReader, string defaultServer, bool runServerAtStartup)
         {
-            // Test only one instace is running...
+            Server activateServer;
+
             if (IsAlreadyRunning())
             {
-                throw new Exception("Only one instance of Devel79 Tray is allowed.");
+                throw new ProgramException("Only one instance of Devel79 Tray is allowed.");
             }
 
-            // Read configuration...
-            if (!configurationReader.Read())
+            servers = configurationReader.GetServers();
+
+            if (defaultServer != null)
             {
-                throw new Exception("Configuration file \"" + configurationReader.GetConfigurationFile() + "\" doesn't exist or can't be read.");
+                if (servers.ContainsKey(defaultServer.ToLower()))
+                {
+                    activateServer = servers[defaultServer.ToLower()];
+                }
+                else
+                {
+                    throw new Exception("Default server \"" + defaultServer + "\" is not specified in configuration file \"" + configurationReader.GetConfigurationFile() + "\".");
+                }
+            }
+            else
+            {
+                ArrayList values = new ArrayList(servers.Values);
+                activateServer = (Server)values[0];
             }
 
-            // Create VirtualBox machine
-            vboxServer = new VirtualBoxServer(this, configurationReader.GetName(), configurationReader.GetMachine(), configurationReader.GetIp(), configurationReader.getSsh());
+            if (servers.Count == 0)
+            {
+                throw new Exception("No server is defined in \"" + configurationReader.GetConfigurationFile() + "\".");
+            }
+            else if (servers.Count > 1)
+            {
+                foreach (Server server in servers.Values)
+                {
+                    if (VirtualBoxServer.IsServerRunning(server.GetMachine()))
+                    {
+                        activateServer = server;
+                        runServerAtStartup = false;
+                    }
 
-            // Create email monitor service
-            emailMonitor = new EmailMonitor(this, configurationReader.getEmail());
+                    ToolStripMenuItem miServer = new ToolStripMenuItem(server.GetName());
+                    miServer.Tag = server.GetMachine();
+                    miServer.Click += MenuChangeServer;
+                    miServers.DropDownItems.Add(miServer);
+                }
+                miServersSeparator.Visible = true;
+                miServers.Visible = true;
+            }
 
-            // Tray update
-            trayIcon.Text = configurationReader.GetName();
-            miOpenEmailDirectorySeparator.Visible = emailMonitor.IsActive();
-            miOpenEmailDirectory.Visible = emailMonitor.IsActive();
             trayIcon.Visible = true;
 
-            // Initialize VirtualBox machine
             try
             {
-                vboxServer.Initialize(runServerAtStartup);
+                // Create VirtualBox machine
+                vboxServer = new VirtualBoxServer(this);
+
+                // Create email monitor service
+                emailMonitor = new EmailMonitor(this);
+
+                // Initialize VirtualBox servers
+                vboxServer.Initialize();
+
+                ChangeServer(activateServer);
+
+                if (runServerAtStartup && !VirtualBoxServer.IsServerRunning(activateServer.GetMachine()))
+                {
+                    vboxServer.StartServer();
+                }
             }
-            catch (Exception e)
+            catch (ProgramException e)
             {
                 trayIcon.Visible = false;
                 throw e;
@@ -244,17 +350,17 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Show console.
+        /// Show console menu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void MenuShowConsole(object sender, EventArgs e)
         {
-            vboxServer.ShowConsole();
+            vboxServer.ShowConsole(activeServer.GetSSH());
         }
 
         /// <summary>
-        /// Start server.
+        /// Start server menu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -264,14 +370,14 @@ namespace Devel79Tray
             {
                 vboxServer.StartServer();
             }
-            catch (Exception ex) 
+            catch (VirtualBoxServerException ex) 
             {
                 ShowError("Error", ex.Message);
             }
         }
 
         /// <summary>
-        /// Stop server.
+        /// Stop server menu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -281,14 +387,14 @@ namespace Devel79Tray
             {
                 vboxServer.StopServer();
             }
-            catch (Exception ex)
+            catch (VirtualBoxServerException ex)
             {
                 ShowError("Error", ex.Message);
             }
         }
 
         /// <summary>
-        /// Restart server.
+        /// Restart server menu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -298,20 +404,41 @@ namespace Devel79Tray
             {
                 vboxServer.RestartServer();
             }
-            catch (Exception ex)
+            catch (VirtualBoxServerException ex)
             {
                 ShowError("Error", ex.Message);
             }
         }
 
         /// <summary>
-        /// Ping server.
+        /// Ping server menu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void MenuPingServer(object sender, EventArgs e)
         {
-            vboxServer.PingServer();
+            vboxServer.PingServer(activeServer.GetIP());
+        }
+
+        /// <summary>
+        /// Change server menu.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MenuChangeServer(object sender, EventArgs e)
+        {
+            string machine = ((ToolStripMenuItem)sender).Tag.ToString();
+            ChangeServer(servers[machine.ToLower()]);
+        }
+
+        /// <summary>
+        /// Run command menu.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MenuCommand(object sender, EventArgs e)
+        {
+            vboxServer.RunCommand(((ToolStripMenuItem)sender).Text, ((ToolStripMenuItem)sender).Tag.ToString());
         }
 
         /// <summary>
@@ -377,6 +504,23 @@ namespace Devel79Tray
                 miRestartServer.Visible = false;
                 miPingServer.Visible = false;
 
+                if (emailMonitor.IsActive())
+                {
+                    emailMonitor.StopMonitoring();
+                    miOpenEmailDirectorySeparator.Visible = false;
+                    miOpenEmailDirectory.Visible = false;
+                }
+
+                if (miCommands.DropDownItems.Count > 0)
+                {
+                    for (int i = 0; i < miCommands.DropDownItems.Count; i++)
+                    {
+                        miCommands.DropDownItems.RemoveAt(0);
+                    }
+                }
+
+                miCommandsSeparator.Visible = false;
+                miCommands.Visible = false;
             }
         }
 
@@ -398,6 +542,93 @@ namespace Devel79Tray
                 miStopServer.Visible = true;
                 miRestartServer.Visible = true;
                 miPingServer.Visible = true;
+
+                if (activeServer.GetMachine() != vboxServer.GetMachine())
+                {
+                    SetActiveServer(servers[vboxServer.GetMachine().ToLower()]);
+                }
+
+                if (!string.IsNullOrEmpty(activeServer.GetEmailDirectory()))
+                {
+                    try
+                    {
+                        emailMonitor.StartMonitoring(activeServer.GetEmailDirectory());
+                        miOpenEmailDirectorySeparator.Visible = true;
+                        miOpenEmailDirectory.Visible = true;
+                    }
+                    catch (EmailMonitorException e)
+                    {
+                        ShowTrayError("Email monitoring", e.Message);
+                    }
+                }
+
+                Dictionary<string, string> commands = activeServer.GetCommands();
+                if (commands.Count > 0)
+                {
+                    foreach (string name in commands.Keys)
+                    {
+                        ToolStripMenuItem miCommand = new ToolStripMenuItem(name);
+                        miCommand.Tag = commands[name];
+                        miCommand.Click += MenuCommand;
+                        miCommands.DropDownItems.Add(miCommand);
+                    }
+
+                    miCommandsSeparator.Visible = true;
+                    miCommands.Visible = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Change active server.
+        /// </summary>
+        /// <param name="server">New active server</param>
+        private void ChangeServer(Server server)
+        {
+            if (server == activeServer)
+            {
+                return;
+            }
+
+            if (vboxServer.GetStatus() == VirtualBoxServer.Status.STARTING)
+            {
+                ShowTrayWarning("Change server", "Server \"" + activeServer.GetName() + "\" is starting now, please wait a second and try it again.");
+                return;
+            }
+
+            if (vboxServer.GetStatus() == VirtualBoxServer.Status.STOPING)
+            {
+                ShowTrayWarning("Change server", "Server \"" + activeServer.GetName() + "\" is stoping now, please wait a second and try it again.");
+                return;
+            }
+
+            if ((vboxServer.GetStatus() == VirtualBoxServer.Status.RUNNING) && !ShowQuestion("Change server", "Server \"" + activeServer.GetName() + "\" is running. Do you want to stop this server and run \"" + server.GetName() + "\"?"))
+            {
+                return;
+            }
+
+            if (vboxServer.GetStatus() != VirtualBoxServer.Status.RUNNING)
+            {
+                SetActiveServer(server);
+            }
+
+            vboxServer.RegisterServer(server.GetName(), server.GetMachine());
+        }
+
+        /// <summary>
+        /// Active new server.
+        /// </summary>
+        /// <param name="server">Server to activate</param>
+        private void SetActiveServer(Server server)
+        {
+            activeServer = server;
+
+            trayIcon.Text = activeServer.GetName();
+
+            for (int i = 0; i < miServers.DropDownItems.Count; i++)
+            {
+                ToolStripMenuItem miServer = (ToolStripMenuItem)miServers.DropDownItems[i];
+                miServer.Checked = miServer.Tag.ToString() == activeServer.GetMachine();
             }
         }
 
@@ -537,7 +768,7 @@ namespace Devel79Tray
             // 
             // Devel79Tray
             // 
-            this.ClientSize = new System.Drawing.Size(116, 100);
+            this.ClientSize = new System.Drawing.Size(100, 100);
             this.Name = "Devel79Tray";
             this.ResumeLayout(false);
 
@@ -573,5 +804,27 @@ namespace Devel79Tray
         /// Call on callback.
         /// </summary>
         void Call();
+    }
+
+    /// <summary>
+    /// Program exception.
+    /// </summary>
+    public class ProgramException : Exception
+    {
+
+        /// <summary>
+        /// Blank initialization.
+        /// </summary>
+        public ProgramException()
+        {
+        }
+
+        /// <summary>
+        /// Initialization with message.
+        /// </summary>
+        /// <param name="message"></param>
+        public ProgramException(string message) : base(message)
+        {
+        }
     }
 }

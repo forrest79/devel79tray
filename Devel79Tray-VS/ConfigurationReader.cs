@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
 
 namespace Devel79Tray
 {
@@ -33,29 +35,9 @@ namespace Devel79Tray
         private string configurationFile;
 
         /// <summary>
-        /// Server name.
+        /// Servers from configuration file
         /// </summary>
-        private string name;
-
-        /// <summary>
-        /// VirtualBox machine name.
-        /// </summary>
-        private string machine;
-
-        /// <summary>
-        /// Server IP address.
-        /// </summary>
-        private string ip;
-
-        /// <summary>
-        /// SSH client shell command.
-        /// </summary>
-        private string ssh;
-
-        /// <summary>
-        /// Email directory to monitor.
-        /// </summary>
-        private string email;
+        private Dictionary<string, Server> servers;
 
         /// <summary>
         /// Class constructor.
@@ -64,23 +46,20 @@ namespace Devel79Tray
         public ConfigurationReader(string configurationFile)
         {
             this.configurationFile = configurationFile;
-            this.name = DEFAULT_NAME;
-            this.machine = DEFAULT_MACHINE;
-            this.ip = DEFAULT_IP;
-            this.ssh = DEFAULT_SSH;
-            this.email = null;
+            this.servers = new Dictionary<string, Server>();
         }
 
         /// <summary>
         /// Read configuration file.
         /// </summary>
-        /// <returns>Success.</returns>
-        public bool Read()
+        private void ReadConfiguration()
         {
             if (File.Exists(configurationFile))
             {
                 try
                 {
+                    Server server = null;
+
                     StreamReader configuration = File.OpenText(configurationFile);
 
                     string line = null;
@@ -92,43 +71,85 @@ namespace Devel79Tray
                         {
                             continue;
                         }
+                        else if (line.ToLower() == "[server]")
+                        {
+                            if (server != null)
+                            {
+                                AddServer(server);
+                            }
+                            server = new Server(DEFAULT_NAME, DEFAULT_MACHINE, DEFAULT_IP, DEFAULT_SSH);
+                            continue;
+                        }
+
+                        if (server == null)
+                        {
+                            throw new ConfigurationReaderException("No [server] section defined for data.");
+                        }
 
                         string[] settings = new string[2];
                         settings = line.Split("=".ToCharArray(), 2);
 
-                        string key = settings[0].Trim().ToLower();
+                        string key = settings[0].Trim();
                         string value = settings[1].Trim();
 
-                        switch (key)
+                        switch (key.ToLower())
                         {
-                            case "name" :
-                                name = value;
+                            case "name":
+                                server.SetName(value);
                                 break;
-                            case "machine" :
-                                machine = value;
+                            case "machine":
+                                server.SetMachine(value);
                                 break;
-                            case "ip" :
-                                ip = value;
+                            case "ip":
+                                server.SetIP(value);
                                 break;
                             case "ssh":
-                                ssh = value;
+                                server.SetSSH(value);
                                 break;
                             case "email":
-                                email = value;
+                                server.SetEmailDirectory(value);
+                                break;
+                            case "command":
+                                server.AddCommand(value);
                                 break;
                         }
                     }
+
                     configuration.Close();
 
-                    return true;
+                    if (server == null)
+                    {
+                        throw new ConfigurationReaderException("No server defined in configuration.");
+                    }
+
+                    AddServer(server);
+                }
+                catch (ConfigurationReaderException e)
+                {
+                    throw e;
                 }
                 catch
                 {
-                    return false;
+                    throw new ConfigurationReaderException("Can't read from configuration file \"" + configurationFile + "\".");
                 }
             }
+            else
+            {
+                throw new ConfigurationReaderException("Configuration file \"" + configurationFile + "\" not exists.");
+            }
+        }
 
-            return false;
+        /// <summary>
+        /// Add new server definition to server.
+        /// </summary>
+        /// <param name="newServer">Server definition</param>
+        private void AddServer(Server newServer)
+        {
+            if (servers.ContainsKey(newServer.GetMachine().ToLower())) {
+                throw new ConfigurationReaderException("Server machine \"" + newServer.GetMachine() + "\" is already registered.");
+            }
+
+            servers.Add(newServer.GetMachine().ToLower(), newServer);
         }
 
         /// <summary>
@@ -141,48 +162,39 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Return server name.
+        /// Get server list.
         /// </summary>
-        /// <returns>Server name.</returns>
-        public string GetName()
+        /// <returns>Server list keys=lowered machine names, values=Server</returns>
+        public Dictionary<string, Server> GetServers()
         {
-            return name;
+            if (servers.Count == 0)
+            {
+                ReadConfiguration();
+            }
+
+            return servers;
+        }
+    }
+
+    /// <summary>
+    /// Configuration reader exception.
+    /// </summary>
+    public class ConfigurationReaderException : ProgramException
+    {
+
+        /// <summary>
+        /// Blank initialization.
+        /// </summary>
+        public ConfigurationReaderException()
+        {
         }
 
         /// <summary>
-        /// Return VirtualBox machine name.
+        /// Initialization with message.
         /// </summary>
-        /// <returns>VirtualBox machine name.</returns>
-        public string GetMachine()
+        /// <param name="message"></param>
+        public ConfigurationReaderException(string message) : base(message)
         {
-            return machine;
-        }
-
-        /// <summary>
-        /// Return server IP address.
-        /// </summary>
-        /// <returns>Server IP address.</returns>
-        public string GetIp()
-        {
-            return ip;
-        }
-
-        /// <summary>
-        /// Return SSH client shell command.
-        /// </summary>
-        /// <returns></returns>
-        public string getSsh()
-        {
-            return ssh;
-        }
-
-        /// <summary>
-        /// Return email directory to monitor.
-        /// </summary>
-        /// <returns></returns>
-        public string getEmail()
-        {
-            return email;
         }
     }
 }
