@@ -82,9 +82,11 @@ namespace Devel79Tray
         {
             if (IsActive())
             {
-                this.fileSystemWatcher.EnableRaisingEvents = false;
-                this.fileSystemWatcher.Created -= new FileSystemEventHandler(EmailCreated);
-                this.fileSystemWatcher = null;
+                fileSystemWatcher.EnableRaisingEvents = false;
+                fileSystemWatcher.Created -= new FileSystemEventHandler(EmailCreated);
+                fileSystemWatcher = null;
+
+                active = false;
             }
             else
             {
