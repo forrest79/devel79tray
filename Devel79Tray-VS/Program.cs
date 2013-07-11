@@ -513,10 +513,7 @@ namespace Devel79Tray
 
                 if (miCommands.DropDownItems.Count > 0)
                 {
-                    for (int i = 0; i < miCommands.DropDownItems.Count; i++)
-                    {
-                        miCommands.DropDownItems.RemoveAt(0);
-                    }
+                    miCommands.DropDownItems.Clear();
                 }
 
                 miCommandsSeparator.Visible = false;

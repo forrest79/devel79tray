@@ -38,16 +38,18 @@ If email in config is set to existing directory, all new files with .eml extensi
 
 HISTORY
 =======
-1.0.0 [2010-01-01] - First public version in C#
-2.0.0 [2012-05-07] - Rewritten using VirtualBox SDK, icons changed.
-2.0.1 [2012-05-28] - Update to VirtualBoxSDK-4.1.16-78094.
-2.0.2 [2012-06-06] - Bug fix, bad state detection when external server start after server stop.
-2.0.3 [2012-06-23] - Update to VirtualBoxSDK-4.1.18-78361.
-2.0.4 [2012-09-17] - Update to VirtualBoxSDK-4.2.0-80737.
-2.1.0 [2012-12-20] - Run server in headless mode, replace VirtualBox console with SSH client, add email monitoring, update to VirtualBoxSDK-4.2.6-82870
-2.1.1 [2013-03-22] - Custom configuration file may not be in the directory with the application, update to VirtualBoxSDK-4.2.10-84104.
-2.1.2 [2013-04-28] - Update to VirtualBoxSDK-4.2.12-84980.
+3.0.1 [2013-07-11] - Update to VirtualBoxSDK-4.2.16-86992. Fix bug when no all commands was removed on server stop.
 3.0.0 [2013-06-19] - New version with more servers, running commands (in new thread) and run ping in new thread.
+2.1.2 [2013-04-28] - Update to VirtualBoxSDK-4.2.12-84980.
+2.1.1 [2013-03-22] - Custom configuration file may not be in the directory with the application, update to VirtualBoxSDK-4.2.10-84104.
+2.1.0 [2012-12-20] - Run server in headless mode, replace VirtualBox console with SSH client, add email monitoring, update to VirtualBoxSDK-4.2.6-82870
+2.0.4 [2012-09-17] - Update to VirtualBoxSDK-4.2.0-80737.
+2.0.3 [2012-06-23] - Update to VirtualBoxSDK-4.1.18-78361.
+2.0.2 [2012-06-06] - Bug fix, bad state detection when external server start after server stop.
+2.0.1 [2012-05-28] - Update to VirtualBoxSDK-4.1.16-78094.
+2.0.0 [2012-05-07] - Rewritten using VirtualBox SDK, icons changed.
+1.0.0 [2010-01-01] - First public version in C#
+
 
 REQUIREMENTS
 ============
