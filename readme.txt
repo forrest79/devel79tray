@@ -38,6 +38,8 @@ If email in config is set to existing directory, all new files with .eml extensi
 
 HISTORY
 =======
+3.0.4 [2013-12-04] - Update to VirtualBoxSDK-4.3.4-91027.
+3.0.3 [2013-10-16] - Update to VirtualBoxSDK-4.3.0-89960.
 3.0.2 [2013-07-29] - Update to VirtualBoxSDK-4.2.18-88780.
 3.0.1 [2013-07-11] - Update to VirtualBoxSDK-4.2.16-86992. Fix bug when no all commands was removed on server stop.
 3.0.0 [2013-06-19] - New version with more servers, running commands (in new thread) and run ping in new thread.
