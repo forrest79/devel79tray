@@ -38,6 +38,8 @@ If email in config is set to existing directory, all new files with .eml extensi
 
 HISTORY
 =======
+3.0.9 [2015-04-10] - Update to VirtualBoxSDK-4.3.26-98988.
+3.0.8 [2015-03-07] - Update to VirtualBoxSDK-4.3.18-96516.
 3.0.7 [2014-05-23] - Update to VirtualBoxSDK-4.3.12-93733.
 3.0.6 [2014-03-29] - Update to VirtualBoxSDK-4.3.10-93012.
 3.0.5 [2013-12-29] - Update to VirtualBoxSDK-4.3.6-91406.
