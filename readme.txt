@@ -1,4 +1,4 @@
-Devel79 Tray © Jakub Trmota, 2015 (http://forrest79.net)
+Devel79 Tray © Jakub Trmota, 2016 (http://forrest79.net)
 
 
 VirtualBox developer server tray icon.
@@ -38,6 +38,7 @@ If email in config is set to existing directory, all new files with .eml extensi
 
 HISTORY
 =======
+3.0.14 [2016-02-06] - Update to VirtualBoxSDK-5.0.14-105127.
 3.0.13 [2015-12-11] - Update to VirtualBoxSDK-5.0.10-104061.
 3.0.12 [2015-09-09] - Update to VirtualBoxSDK-5.0.4-102546.
 3.0.11 [2015-07-13] - Update to VirtualBoxSDK-5.0.0-101573.
