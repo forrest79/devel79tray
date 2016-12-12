@@ -6,38 +6,42 @@ VirtualBox developer server tray icon.
 
 HOW TO USE:
 ===========
-devel79tray [--run|-r] [--default|-d machine] [--config|-c filename]
+devel79tray [--run|-r servers] [--config|-c filename]
 
-Settings: --run, -r        run first or default VirtualBox machine after application starts (canceled if another server from list is already running)
-          --default, -d    specify default machine
-          --config, -c     specify filename with configuration (default is "devel79.conf" in application directory)
+Settings: --run, -r        run server (or servers divided by space) after application starts
+          --config, -c     specify filename with configuration (default is "devel79tray.conf" in application directory)
 
 Configuration file (make one or more [server] sections):
 name = Server name to display
 machine = VirtualBox machine name (case sensitive)
-ip = VirtualBox Network adapter IP address (used for ping command)
 ssh = shell connect command to SSH server (used for Show console, can be Putty, ssh from msys or other SSH client)
-email = directory witch is watching for new saved email (optional)
-command = command to run in format NAME : COMMAND, example: Clear cache : ssh devel@devel79 clear-cache (optional, can be multiple commands)
+watch = directory in which is watching for new files, format: NAME | MESSAGE | DIRECTORY, NAME is diplayed in menu, MESSAGE is shown while new file is created (optional, can be multiple directories)
+command = command to run in format NAME : COMMAND, NAME is displayed in menu, COMMAND is run (optional, can be multiple commands)
 
 Tray icon menu:
-Double click - if server is running show VirtualBox console (SSH client)
-Show console - if server is running show VirtualBox console (SSH client)
-Start server - if server is not running, start server
-Restart server - if server is running, stop and start server
-Stop server - if server is running, stop server
-Ping server - if server is running, ping to server IP address a show result
-Commands - if server has one or more commands, run command
-Servers - if there is more than one server, switch to other server
-Open email directory - open email directory in Windows Explorer
-Exit - exit tray icon, if server is running, show question for stop server
+Double click - if server is running show VirtualBox console (SSH client) for top running server (running server which is more top in configuration file)
+Show "SERVER" console - same as double click (only if some server is running)
+Server:
+- SERVER 1:
+-- Restart server - stop and start server (for running
+-- Stop server - stop server
+-- Open NAME directory - open directory in Windows Explorer
+-- COMMAND - run command
+- SERVER 2:
+...
+Start server:
+- SERVER 1 - run server (only if is stopped)
+- SERVER 2 - run server (only if is stopped)
+Exit - exit tray icon, if server(s) is/are running, show question for stop server(s)
 
-Email monitoring:
-If email in config is set to existing directory, all new files with .eml extension are shown in balloon tooltip and if you click on this tooltip, the email is open in associated application.
+Directory monitoring:
+If watch in configuration is set to existing directory, all new files with are shown in balloon tooltip and if you click on this tooltip, the file is open in associated application.
 
 
 HISTORY
 =======
+4.0.0 [2016-12-21] - Add support for running multiple servers in one time, add support for watching more directories, update to VirtualBoxSDK-5.1.12-112440.
+3.0.21 [2016-08-26] - Update to VirtualBoxSDK-5.1.4-110228.
 3.0.20 [2016-08-05] - Update to VirtualBoxSDK-5.1.2-108956.
 3.0.19 [2016-07-14] - Update to VirtualBoxSDK-5.1.0-108711.
 3.0.18 [2016-07-02] - Update to VirtualBoxSDK-5.0.24-108355.

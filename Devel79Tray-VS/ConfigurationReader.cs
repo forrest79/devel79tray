@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
 
 namespace Devel79Tray
@@ -10,24 +9,14 @@ namespace Devel79Tray
     public class ConfigurationReader
     {
         /// <summary>
-        /// Default server name.
+        /// Main program.
         /// </summary>
-        private const string DEFAULT_NAME = "Devel79 Server";
+        private Devel79Tray tray;
 
         /// <summary>
-        /// Default VirtualBox machine name.
+        /// VirtualBox wrapper.
         /// </summary>
-        private const string DEFAULT_MACHINE = "devel79";
-        
-        /// <summary>
-        /// Default server IP address.
-        /// </summary>
-        private const string DEFAULT_IP = "192.168.56.1";
-
-        /// <summary>
-        /// Default SSH client shell command.
-        /// </summary>
-        private const string DEFAULT_SSH = "ssh devel@devel79";
+        private VirtualBoxServer vboxServer;
 
         /// <summary>
         /// Absolute path to configuration file.
@@ -42,9 +31,13 @@ namespace Devel79Tray
         /// <summary>
         /// Class constructor.
         /// </summary>
-        /// <param name="configurationFile">Absolute path to configuration file.</param>
-        public ConfigurationReader(string configurationFile)
+        /// <param name="tray">Main program</param>
+        /// <param name="vboxServer">VirtualBox wrapper</param>
+        /// <param name="configurationFile">Absolute path to configuration file</param>
+        public ConfigurationReader(Devel79Tray tray, VirtualBoxServer vboxServer, string configurationFile)
         {
+            this.tray = tray;
+            this.vboxServer = vboxServer;
             this.configurationFile = configurationFile;
             this.servers = new Dictionary<string, Server>();
         }
@@ -77,7 +70,7 @@ namespace Devel79Tray
                             {
                                 AddServer(server);
                             }
-                            server = new Server(DEFAULT_NAME, DEFAULT_MACHINE, DEFAULT_IP, DEFAULT_SSH);
+                            server = new Server(this.tray, this.vboxServer);
                             continue;
                         }
 
@@ -100,17 +93,31 @@ namespace Devel79Tray
                             case "machine":
                                 server.SetMachine(value);
                                 break;
-                            case "ip":
-                                server.SetIP(value);
-                                break;
                             case "ssh":
-                                server.SetSSH(value);
+                                server.SetSSHCommand(value);
                                 break;
-                            case "email":
-                                server.SetEmailDirectory(value);
+                            case "watch":
+                                string[] watchingDirectory = value.Split("|".ToCharArray(), 3);
+
+                                if (watchingDirectory.Length != 3)
+                                {
+                                    throw new ConfigurationReaderException("Parameter \"watch\" must have 3 parameters divided by \"|\" (name | message | directory)");
+                                }
+                                else if (!Directory.Exists(watchingDirectory[2]))
+                                {
+                                    throw new ConfigurationReaderException("Directory \"" + watchingDirectory[2].Trim() + "\" for watching not exists.");
+                                }
+                                server.AddDirectoryWatching(watchingDirectory[0].Trim(), watchingDirectory[1].Trim(), watchingDirectory[2].Trim());
                                 break;
                             case "command":
-                                server.AddCommand(value);
+                                string[] command = value.Split("|".ToCharArray(), 2);
+
+                                if (command.Length != 2)
+                                {
+                                    throw new ConfigurationReaderException("Parameter \"command\" must have 2 parameters divided by \"|\" (name | command)");
+                                }
+
+                                server.AddCommand(command[0].Trim(), command[1].Trim());
                                 break;
                         }
                     }
@@ -145,7 +152,17 @@ namespace Devel79Tray
         /// <param name="newServer">Server definition</param>
         private void AddServer(Server newServer)
         {
-            if (servers.ContainsKey(newServer.GetMachine().ToLower())) {
+            if (string.IsNullOrEmpty(newServer.GetName()))
+            {
+                throw new ConfigurationReaderException("Name is required for all servers.");
+            }
+            else if (string.IsNullOrEmpty(newServer.GetMachine()))
+            {
+                throw new ConfigurationReaderException("Machine is required for all servers.");
+            }
+
+            if (servers.ContainsKey(newServer.GetMachine().ToLower()))
+            {
                 throw new ConfigurationReaderException("Server machine \"" + newServer.GetMachine() + "\" is already registered.");
             }
 
@@ -155,7 +172,7 @@ namespace Devel79Tray
         /// <summary>
         /// Return configuration file absolute path.
         /// </summary>
-        /// <returns>Configuration file absolute path.</returns>
+        /// <returns>Configuration file absolute path</returns>
         public string GetConfigurationFile()
         {
             return configurationFile;
@@ -181,7 +198,6 @@ namespace Devel79Tray
     /// </summary>
     public class ConfigurationReaderException : ProgramException
     {
-
         /// <summary>
         /// Blank initialization.
         /// </summary>
