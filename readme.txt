@@ -1,4 +1,4 @@
-Devel79 Tray © Jakub Trmota, 2016 (http://forrest79.net)
+Devel79 Tray © Jakub Trmota, 2017 (http://forrest79.net)
 
 
 VirtualBox developer server tray icon.
@@ -40,6 +40,7 @@ If watch in configuration is set to existing directory, all new files with are s
 
 HISTORY
 =======
+4.0.1 [2016-01-31] - Update to VirtualBoxSDK-5.1.14-112924.
 4.0.0 [2016-12-21] - Add support for running multiple servers in one time, add support for watching more directories, update to VirtualBoxSDK-5.1.12-112440.
 3.0.21 [2016-08-26] - Update to VirtualBoxSDK-5.1.4-110228.
 3.0.20 [2016-08-05] - Update to VirtualBoxSDK-5.1.2-108956.
