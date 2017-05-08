@@ -451,7 +451,7 @@ namespace Devel79Tray
         {
             if (defaultServer == null)
             {
-                throw new ProgramException("No default server is selected.");
+                return;
             }
 
             defaultServer.ShowConsole();

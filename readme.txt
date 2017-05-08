@@ -40,6 +40,7 @@ If watch in configuration is set to existing directory, all new files with are s
 
 HISTORY
 =======
+4.0.4 [2016-04-19] - Fix double click on tray icon with no server running.
 4.0.3 [2016-03-20] - Update to VirtualBoxSDK-5.1.18-114002.
 4.0.2 [2016-03-15] - Update to VirtualBoxSDK-5.1.16-113841.
 4.0.1 [2016-01-31] - Update to VirtualBoxSDK-5.1.14-112924.
