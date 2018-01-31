@@ -1,4 +1,4 @@
-Devel79 Tray © Jakub Trmota, 2017 (http://forrest79.net)
+Devel79 Tray © Jakub Trmota, 2018 (http://forrest79.net)
 
 
 VirtualBox developer server tray icon.
@@ -40,16 +40,17 @@ If watch in configuration is set to existing directory, all new files with are s
 
 HISTORY
 =======
-4.0.9 [2016-12-06] - Update to VirtualBoxSDK-5.2.2-119230.
-4.0.8 [2016-09-27] - Update to VirtualBoxSDK-5.2.0-118431.
-4.0.7 [2016-09-27] - Update to VirtualBoxSDK-5.1.28-117968.
-4.0.6 [2016-07-28] - Update to VirtualBoxSDK-5.1.26-117224.
-4.0.5 [2016-05-08] - Update to VirtualBoxSDK-5.1.22-115126.
-4.0.4 [2016-04-19] - Fix double click on tray icon with no server running.
-4.0.3 [2016-03-20] - Update to VirtualBoxSDK-5.1.18-114002.
-4.0.2 [2016-03-15] - Update to VirtualBoxSDK-5.1.16-113841.
-4.0.1 [2016-01-31] - Update to VirtualBoxSDK-5.1.14-112924.
-4.0.0 [2016-12-21] - Add support for running multiple servers in one time, add support for watching more directories, update to VirtualBoxSDK-5.1.12-112440.
+4.0.10 [2018-01-30] - Update to VirtualBoxSDK-5.2.6-120293.
+4.0.9  [2017-12-06] - Update to VirtualBoxSDK-5.2.2-119230.
+4.0.8  [2017-09-27] - Update to VirtualBoxSDK-5.2.0-118431.
+4.0.7  [2017-09-27] - Update to VirtualBoxSDK-5.1.28-117968.
+4.0.6  [2017-07-28] - Update to VirtualBoxSDK-5.1.26-117224.
+4.0.5  [2017-05-08] - Update to VirtualBoxSDK-5.1.22-115126.
+4.0.4  [2017-04-19] - Fix double click on tray icon with no server running.
+4.0.3  [2017-03-20] - Update to VirtualBoxSDK-5.1.18-114002.
+4.0.2  [2017-03-15] - Update to VirtualBoxSDK-5.1.16-113841.
+4.0.1  [2017-01-31] - Update to VirtualBoxSDK-5.1.14-112924.
+4.0.0  [2016-12-21] - Add support for running multiple servers in one time, add support for watching more directories, update to VirtualBoxSDK-5.1.12-112440.
 3.0.21 [2016-08-26] - Update to VirtualBoxSDK-5.1.4-110228.
 3.0.20 [2016-08-05] - Update to VirtualBoxSDK-5.1.2-108956.
 3.0.19 [2016-07-14] - Update to VirtualBoxSDK-5.1.0-108711.
