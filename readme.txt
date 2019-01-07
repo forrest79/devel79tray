@@ -1,4 +1,4 @@
-Devel79 Tray © Jakub Trmota, 2018 (http://forrest79.net)
+Devel79 Tray © Jakub Trmota, 2019 (http://forrest79.net)
 
 
 VirtualBox developer server tray icon.
@@ -40,6 +40,7 @@ If watch in configuration is set to existing directory, all new files with are s
 
 HISTORY
 =======
+4.1.0  [2019-01-03] - Update to VirtualBoxSDK-6.0.0-127566.
 4.0.15 [2018-11-25] - Update to VirtualBoxSDK-5.2.22-126460.
 4.0.14 [2018-10-22] - Update to VirtualBoxSDK-5.2.20-125813.
 4.0.13 [2018-09-01] - Update to VirtualBoxSDK-5.2.18-124319.

@@ -11,7 +11,7 @@ using System.Resources;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Forrest79.net")]
 [assembly: AssemblyProduct("Devel79 Server - Tray Icon")]
-[assembly: AssemblyCopyright("Copyright © Forrest79.net 2018")]
+[assembly: AssemblyCopyright("Copyright © Forrest79.net 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,6 +33,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("4.0.15.0")]
-[assembly: AssemblyFileVersion("4.0.15.0")]
+[assembly: AssemblyVersion("4.1.0.0")]
+[assembly: AssemblyFileVersion("4.1.0.0")]
 [assembly: NeutralResourcesLanguageAttribute("en")]
