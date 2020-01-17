@@ -215,7 +215,7 @@ namespace Devel79Tray
                 {
                     server.SetStarting();
 
-                    IProgress progress = machine.LaunchVMProcess(serverSession, "headless", "");
+                    IProgress progress = machine.LaunchVMProcess(serverSession, "headless", new string[0]);
                 }
             }
             catch
