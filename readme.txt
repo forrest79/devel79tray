@@ -1,4 +1,4 @@
-Devel79 Tray © Jakub Trmota, 2020 (http://forrest79.net)
+Devel79 Tray Â© Jakub Trmota, 2020 (https://forrest79.net)
 
 
 VirtualBox developer server tray icon.
@@ -106,7 +106,7 @@ You need .NET Framework 4 to run this application (http://www.microsoft.com/en-u
 
 LICENSE
 =======
-Devel79 Tray is distributed under BSD license. See license.txt.
+Devel79 Tray is distributed under New BSD license. See license.txt.
 
 
 https://github.com/forrest79/devel79tray
