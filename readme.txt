@@ -40,6 +40,7 @@ If watch in configuration is set to existing directory, all new files with are s
 
 HISTORY
 =======
+4.2.10 [2021-12-11] - Update to VirtualBoxSDK-6.1.30-148432.
 4.2.9  [2021-11-21] - Update to VirtualBoxSDK-6.1.28-147628.
 4.2.8  [2021-09-09] - Update to VirtualBoxSDK-6.1.26-145957.
 4.2.7  [2021-05-30] - Update to VirtualBoxSDK-6.1.22-144080.
