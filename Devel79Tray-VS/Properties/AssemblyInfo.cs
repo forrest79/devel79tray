@@ -9,9 +9,9 @@ using System.Resources;
 [assembly: AssemblyTitle("Devel79 - Tray")]
 [assembly: AssemblyDescription("Tray icon and control utility for Devel79 Server.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Forrest79.net")]
+[assembly: AssemblyCompany("Jakub Trmota")]
 [assembly: AssemblyProduct("Devel79 Server - Tray Icon")]
-[assembly: AssemblyCopyright("Copyright © Forrest79.net 2019")]
+[assembly: AssemblyCopyright("Copyright © Jakub Trmota 2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,6 +33,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("4.3.4.0")]
-[assembly: AssemblyFileVersion("4.3.4.0")]
+[assembly: AssemblyVersion("5.0.0.0")]
+[assembly: AssemblyFileVersion("5.0.0.0")]
 [assembly: NeutralResourcesLanguageAttribute("en")]

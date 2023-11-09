@@ -19,7 +19,7 @@ namespace Devel79Tray
         private const string TRAY_TITLE = "Devel79 Tray";
 
         /// <summary>
-        /// Defatul configuration file name.
+        /// Default configuration file name.
         /// </summary>
         private const string DEFAULT_CONFIGURATION_FILE = "devel79tray.conf";
 
@@ -115,7 +115,7 @@ namespace Devel79Tray
                 {
                     if ((args.Length <= i) || (args[i + 1].StartsWith("-")))
                     {
-                        ShowError("Inicialization error", "No server for --run parameter specified.");
+                        ShowError("Initialization error", "No server for --run parameter specified.");
                     }
                     serverList = true;
                 }
@@ -123,7 +123,7 @@ namespace Devel79Tray
                 {
                     if ((args.Length <= i) || (args[i + 1].StartsWith("-")))
                     {
-                        ShowError("Inicialization error", "No file for --config parameter specified.");
+                        ShowError("Initialization error", "No file for --config parameter specified.");
                     }
                     configurationFile = args[++i];
                     serverList = false;
@@ -143,12 +143,12 @@ namespace Devel79Tray
             }
             catch (ProgramException e)
             {
-                ShowError("Inicialization error", e.Message);
+                ShowError("Initialization error", e.Message);
                 return;
             }
             catch (Exception e)
             {
-                ShowError("Unhandled inicialization exception", "Message: " + e.Message + "\nSource: " + e.Source + "\nStack trace: " + e.StackTrace);
+                ShowError("Unhandled initialization exception", "Message: " + e.Message + "\nSource: " + e.Source + "\nStack trace: " + e.StackTrace);
                 return;
             }
 
@@ -239,7 +239,6 @@ namespace Devel79Tray
 
             try
             {
-                // Initialize VirtualBox servers
                 vboxServer.Initialize(servers);
 
                 if (runServers.Length > 0)

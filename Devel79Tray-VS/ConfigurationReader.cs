@@ -93,8 +93,8 @@ namespace Devel79Tray
                             case "machine":
                                 server.SetMachine(value);
                                 break;
-                            case "ssh":
-                                server.SetSSHCommand(value);
+                            case "console":
+                                server.SetConsoleCommand(value);
                                 break;
                             case "watch":
                                 string[] watchingDirectory = value.Split("|".ToCharArray(), 3);
@@ -159,6 +159,10 @@ namespace Devel79Tray
             else if (string.IsNullOrEmpty(newServer.GetMachine()))
             {
                 throw new ConfigurationReaderException("Machine is required for all servers.");
+            }
+            else if (string.IsNullOrEmpty(newServer.GetConsoleCommand()))
+            {
+                throw new ConfigurationReaderException("Console command is required for all servers.");
             }
 
             if (servers.ContainsKey(newServer.GetMachine().ToLower()))

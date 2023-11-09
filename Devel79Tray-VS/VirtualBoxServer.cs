@@ -22,7 +22,7 @@ namespace Devel79Tray
             POWEREDOFF,
             STARTING,
             RUNNING,
-            STOPING
+            STOPPING
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Devel79Tray
                     break;
                 case MachineState.MachineState_Stopping:
                 case MachineState.MachineState_Saving:
-                    newStatus = Status.STOPING;
+                    newStatus = Status.STOPPING;
                     break;
                 default :
                     newStatus = Status.POWEREDOFF;
@@ -247,7 +247,7 @@ namespace Devel79Tray
             IMachine machine = machines[server];
             Session serverSession = getSession(server);
 
-            server.SetStoping();
+            server.SetStopping();
 
             if (serverSession.State == SessionState.SessionState_Locked)
             {

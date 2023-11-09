@@ -10,7 +10,7 @@ namespace Devel79Tray
     public class Server
     {
         /// <summary>
-        /// Constant for Win32 function ShowWindow. Window is showen.
+        /// Constant for Win32 function ShowWindow. Window is shown.
         /// </summary>
         private const int SW_RESTORE = 9;
 
@@ -35,14 +35,14 @@ namespace Devel79Tray
         private string machine;
 
         /// <summary>
-        /// SSH client shell command.
+        /// Console shell command.
         /// </summary>
-        private string sshCommand;
+        private string consoleCommand;
 
         /// <summary>
-        /// SSH client process.
+        /// Console process.
         /// </summary>
-        private Process sshProcess;
+        private Process consoleProcess;
 
         /// <summary>
         /// Watching directories list <name, directoryMonitor>
@@ -70,9 +70,9 @@ namespace Devel79Tray
         private bool restarting;
 
         /// <summary>
-        /// Is server stoping?
+        /// Is server stopping?
         /// </summary>
-        private bool stoping;
+        private bool stopping;
 
         /// <summary>
         /// Is menu already generated?
@@ -152,12 +152,21 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Set show SSH console command.
+        /// Set run console command.
         /// </summary>
-        /// <param name="sshCommand">Show SSH console command</param>
-        public void SetSSHCommand(string sshCommand)
+        /// <param name="consoleCommand">Run console command</param>
+        public void SetConsoleCommand(string consoleCommand)
         {
-            this.sshCommand = sshCommand;
+            this.consoleCommand = consoleCommand;
+        }
+
+        /// <summary>
+        /// Get run console command.
+        /// </summary>
+        /// <returns>VirtualBox machine name</returns>
+        public string GetConsoleCommand()
+        {
+            return consoleCommand;
         }
 
         /// <summary>
@@ -222,7 +231,7 @@ namespace Devel79Tray
             running = true;
             starting = false;
             restarting = false;
-            stoping = false;
+            stopping = false;
 
             miStartServer.Visible = false;
 
@@ -247,7 +256,7 @@ namespace Devel79Tray
             }
             else
             {
-                if (stoping)
+                if (stopping)
                 {
                     tray.ShowTrayInfo(name, name + " was successfully powered off.");
                 }
@@ -259,7 +268,7 @@ namespace Devel79Tray
 
             running = false;
             starting = false;
-            stoping = false;
+            stopping = false;
 
             miStartServer.Visible = true;
 
@@ -277,9 +286,9 @@ namespace Devel79Tray
         /// <summary>
         /// Set server as stopping.
         /// </summary>
-        public void SetStoping()
+        public void SetStopping()
         {
-            this.stoping = true;
+            this.stopping = true;
         }
 
         /// <summary>
@@ -304,7 +313,7 @@ namespace Devel79Tray
         /// Set server status.
         /// </summary>
         /// <param name="status">Server status</param>
-        /// <param name="initializing">True if is seting status during application initializing, false otherwise</param>
+        /// <param name="initializing">True if is setting status during application initializing, false otherwise</param>
         public void SetStatus(VirtualBoxServer.Status status, bool initializing)
         {
             this.status = status;
@@ -378,6 +387,13 @@ namespace Devel79Tray
                 miStopServer.Click += MenuStopServer;
                 this.miServer.DropDownItems.Add(miStopServer);
 
+                this.miServer.DropDownItems.Add(new ToolStripSeparator());
+
+                ToolStripMenuItem miNewConsole = new ToolStripMenuItem();
+                miNewConsole.Text = "Run &new console";
+                miNewConsole.Click += MenuNewConsole;
+                this.miServer.DropDownItems.Add(miNewConsole);
+
                 if (this.watchingDirectories.Count > 0)
                 {
                     ToolStripSeparator miWatchingDirectoriesSeparator = new ToolStripSeparator();
@@ -397,9 +413,9 @@ namespace Devel79Tray
                     ToolStripSeparator miCommandsSeparator = new ToolStripSeparator();
                     this.miServer.DropDownItems.Add(miCommandsSeparator);
 
-                    foreach (string commnadName in commands.Keys)
+                    foreach (string commandName in commands.Keys)
                     {
-                        ToolStripMenuItem miCommand = new ToolStripMenuItem(commnadName);
+                        ToolStripMenuItem miCommand = new ToolStripMenuItem(commandName);
                         miCommand.Click += MenuRunCommand;
                         this.miServer.DropDownItems.Add(miCommand);
                     }
@@ -456,82 +472,95 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Show SSH client.
+        /// Run or show console.
         /// </summary>
         public void ShowConsole()
         {
-            if (string.IsNullOrEmpty(sshCommand))
-            {
-                tray.ShowTrayError(name + ": SSH", "SSH command can't be empty.");
-            }
-
             if (status == VirtualBoxServer.Status.RUNNING)
             {
                 if (IsConsoleRunning())
                 {
-                    IntPtr hWnd = sshProcess.MainWindowHandle;
-
-                    if (IsIconic(hWnd))
-                    {
-                        ShowWindow(hWnd, SW_RESTORE);
-                    }
-
+                    IntPtr hWnd = IntPtr.Zero;
+                    hWnd = consoleProcess.MainWindowHandle;
+                    ShowWindowAsync(new HandleRef(null, hWnd), SW_RESTORE);
                     SetForegroundWindow(hWnd);
                 }
                 else
                 {
-                    sshProcess = new System.Diagnostics.Process();
-
-                    try
-                    {
-                        string[] sshClient = sshCommand.Split(new Char[] { ' ', '\t' }, 2);
-
-                        switch (sshClient.Length)
-                        {
-                            case 1:
-                                sshProcess.StartInfo.FileName = sshClient[0];
-                                break;
-                            case 2:
-                                sshProcess.StartInfo.Arguments = sshClient[1];
-                                goto case 1;
-                            default:
-                                return;
-                        }
-
-                        sshProcess.Start();
-                    }
-                    catch (System.ComponentModel.Win32Exception)
-                    {
-                        tray.ShowTrayError(name + ": SSH client", "Can't run SSH client with command '" + sshCommand + "'");
-                    }
+                    consoleProcess = RunConsoleCommand("Can't run console with command '" + consoleCommand + "'");
                 }
             }
         }
 
         /// <summary>
-        /// Kill SSH client process.
+        /// Kill console process.
         /// </summary>
-        public void KillConsole()
+        private void KillConsole()
         {
             if (IsConsoleRunning())
             {
-                sshProcess.Kill();
-                sshProcess = null;
+                consoleProcess.Kill();
+                consoleProcess = null;
             }
         }
 
         /// <summary>
-        /// Check if SSH client is running.
+        /// Check if console is running.
         /// </summary>
-        /// <returns>True if SSH client is running</returns>
+        /// <returns>True if console is running</returns>
         private bool IsConsoleRunning()
         {
-            if (sshProcess == null)
+            if (consoleProcess == null)
             {
                 return false;
             }
 
-            return !sshProcess.HasExited;
+            return !consoleProcess.HasExited;
+        }
+
+        /// <summary>
+        /// Run new console.
+        /// </summary>
+        private void NewConsole()
+        {
+            if (status == VirtualBoxServer.Status.RUNNING)
+            {
+                RunConsoleCommand("Can't run new console with command '" + consoleCommand + "'");
+            }
+        }
+
+        /// <summary>
+        /// Run new console.
+        /// </summary>
+        /// <param name="errorMsg">Error message</param>
+        private Process RunConsoleCommand(string errorMsg)
+        {
+            Process process = new Process();
+
+			try
+			{
+				string[] commandParts = consoleCommand.Split(new Char[] { ' ', '\t' }, 2);
+
+				switch (commandParts.Length)
+				{
+					case 1:
+						process.StartInfo.FileName = commandParts[0];
+						break;
+					case 2:
+						process.StartInfo.Arguments = commandParts[1];
+						goto case 1;
+					default:
+						return null;
+				}
+
+				process.Start();
+			}
+			catch (System.ComponentModel.Win32Exception)
+			{
+				tray.ShowTrayError(name + ": Console", errorMsg);
+			}
+
+			return process;
         }
 
         /// <summary>
@@ -546,43 +575,43 @@ namespace Devel79Tray
                 throw new ServerException("Command and name can't be empty.");
             }
 
-            string[] cmd = command.Split(new Char[] { ' ', '\t' }, 2);
+            string[] commandParts = command.Split(new Char[] { ' ', '\t' }, 2);
 
             ThreadPool.QueueUserWorkItem(delegate
             {
-                Process process = new Process();
+                Process commandProcess = new Process();
 
-                switch (cmd.Length)
+                switch (commandParts.Length)
                 {
                     case 1:
-                        process.StartInfo.FileName = cmd[0];
+                        commandProcess.StartInfo.FileName = commandParts[0];
                         break;
                     case 2:
-                        process.StartInfo.Arguments = cmd[1];
+                        commandProcess.StartInfo.Arguments = commandParts[1];
                         goto case 1;
                     default:
                         return;
                 }
 
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.CreateNoWindow = true;
+                commandProcess.StartInfo.UseShellExecute = false;
+                commandProcess.StartInfo.RedirectStandardOutput = true;
+                commandProcess.StartInfo.CreateNoWindow = true;
 
                 try
                 {
-                    process.Start();
+                    commandProcess.Start();
 
-                    string output = process.StandardOutput.ReadToEnd();
+                    string output = commandProcess.StandardOutput.ReadToEnd();
 
-                    if (!process.WaitForExit(60000)) // 1 minute
+                    if (!commandProcess.WaitForExit(60000)) // 1 minute
                     {
-                        process.Kill();
+                        commandProcess.Kill();
                         return;
                     }
 
-                    if (process.ExitCode != 0)
+                    if (commandProcess.ExitCode != 0)
                     {
-                        tray.ShowTrayError(this.name + " [" + name + "]", "Exit code: " + process.ExitCode.ToString() + "." + (string.IsNullOrEmpty(output) ? "" : "\n" + output));
+                        tray.ShowTrayError(this.name + " [" + name + "]", "Exit code: " + commandProcess.ExitCode.ToString() + "." + (string.IsNullOrEmpty(output) ? "" : "\n" + output));
                         return;
                     }
 
@@ -596,7 +625,7 @@ namespace Devel79Tray
         }
 
         /// <summary>
-        /// Start server menu commant.
+        /// Start server menu command.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -636,6 +665,16 @@ namespace Devel79Tray
         }
 
         /// <summary>
+        /// New server console menu command.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MenuNewConsole(object sender, EventArgs e)
+        {
+            NewConsole();
+        }
+
+        /// <summary>
         /// Open watching directory menu command.
         /// </summary>
         /// <param name="sender"></param>
@@ -664,7 +703,7 @@ namespace Devel79Tray
         /// <param name="nCmdShow"></param>
         /// <returns></returns>
         [DllImport("User32")]
-        private static extern int ShowWindow(IntPtr hWnd, int nCmdShow);
+        private static extern bool ShowWindowAsync(HandleRef hWnd, int nCmdShow);
 
         /// <summary>
         /// Win32 function to move window to foreground.
@@ -673,14 +712,6 @@ namespace Devel79Tray
         /// <returns></returns>
         [DllImport("User32")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        /// <summary>
-        /// Win32 function to check window minized state.
-        /// </summary>
-        /// <param name="hWnd"></param>
-        /// <returns>True if minimized</returns>
-        [DllImport("User32")]
-        private static extern bool IsIconic(IntPtr hWnd);
     }
 
     /// <summary>
