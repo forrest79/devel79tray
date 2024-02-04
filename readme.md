@@ -50,6 +50,7 @@ If watch in configuration is set to existing directory, all new created files in
 
 ## HISTORY
 
+- 5.0.1  [2024-02-03] - Update to VirtualBoxSDK-7.0.14-161095.
 - 5.0.0  [2023-09-11] - Update to VirtualBoxSDK-7.0.12-159484, configuration - rename ssh parameter to console, add Run new console menu, compile x64 binary, upgrade project to Visual Studio 2022.
 - 4.3.4  [2022-08-02] - Update to VirtualBoxSDK-7.0.10-158379.
 - 4.3.3  [2022-05-07] - Update to VirtualBoxSDK-7.0.8-156879.
