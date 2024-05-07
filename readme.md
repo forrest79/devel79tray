@@ -1,4 +1,6 @@
-﻿# Devel79 Tray
+﻿> I SWITCHED FROM THE VIRTUAL BOX MACHINES TO THE WSL2 - THIS REPOSITORY IS NO LONGER MAINTAINED
+
+# Devel79 Tray
 
 Tray icon for VirtualBox machines with developer features (running console, commands, watch directories).
 
